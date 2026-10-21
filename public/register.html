@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarketHub | Register</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <script src="js/common.js" defer></script>
+</head>
+<body>
+    <header id="site-header"></header>
+
+    <main class="form-container">
+        <h1>Create Account</h1>
+        <p>Join MarketHub to start shopping.</p>
+
+        <form id="register-form">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="mobile">Mobile Number</label>
+            <input type="tel" id="mobile" name="mobile" required>
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password"
+                   minlength="8" required>
+
+            <button class="primary-button" type="submit">Register</button>
+            <p id="form-message" class="form-message" aria-live="polite"></p>
+        </form>
+
+        <p>Already registered? <a href="login.html">Log in</a></p>
+    </main>
+
+    <div id="site-footer"></div>
+</body>
+</html>
