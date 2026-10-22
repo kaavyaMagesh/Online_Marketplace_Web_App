@@ -4,7 +4,7 @@ const footer = document.getElementById("site-footer");
 if (header) {
     header.innerHTML = `
         <nav class="navbar">
-            <a class="brand" href="index.html">MarketHub</a>
+            <a class="brand" href="index.html">GoodsPlatz</a>
 
             <div class="nav-links">
                 <a href="index.html">Home</a>
@@ -19,7 +19,7 @@ if (header) {
 if (footer) {
     footer.innerHTML = `
         <footer class="footer">
-            <p>&copy; 2026 MarketHub | Online Marketplace</p>
+            <p>&copy; 2026 GoodsPlatz | Online Marketplace</p>
         </footer>
     `;
 }

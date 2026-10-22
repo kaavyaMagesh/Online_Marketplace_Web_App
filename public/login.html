@@ -3,26 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MarketHub | Login</title>
+    <title>GoodsPlatz | Login</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/auth.css">
     <script src="js/common.js" defer></script>
+    <script src="js/auth.js" defer></script>
 </head>
 <body>
     <header id="site-header"></header>
 
     <main class="form-container">
         <h1>Welcome Back!</h1>
-        <p>Log in to access your marketplace account.</p>
+        <p>Log in to access your GoodsPlatz account.</p>
 
-        <form id="login-form">
+        <form id="login-form" novalidate>
             <label for="email">Email</label>
-            <input type="email" id="email" name="email" required>
+            <input type="email" id="email" name="email"
+                   placeholder="you@example.com" required autocomplete="email">
 
             <label for="password">Password</label>
-            <input type="password" id="password" name="password" required>
+            <input type="password" id="password" name="password"
+                   placeholder="Enter your password" required autocomplete="current-password">
 
-            <button class="primary-button" type="submit">Login</button>
+            <button class="primary-button" type="submit" id="login-submit">Login</button>
             <p id="form-message" class="form-message" aria-live="polite"></p>
         </form>
 

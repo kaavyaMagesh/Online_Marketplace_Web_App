@@ -2,12 +2,28 @@
     text-align: center;
 }
 
-.form-container p {
+.form-container > p {
     color: #666;
     line-height: 1.5;
+    text-align: center;
 }
 
 .form-container .form-message {
-    color: #b42318;
+    min-height: 20px;   /* keeps layout stable when message appears/disappears */
+    margin-top: 10px;
+    font-size: 14px;
+    color: #b42318;     /* default error colour; overridden by JS for success */
+    line-height: 1.4;
+}
+
+/* Disable styling: makes it visually obvious that the button is busy */
+.form-container button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* Placeholder colour */
+.form-container input::placeholder {
+    color: #aaa;
     font-size: 14px;
 }

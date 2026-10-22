@@ -3,33 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MarketHub | Register</title>
+    <title>GoodsPlatz | Register</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/auth.css">
     <script src="js/common.js" defer></script>
+    <script src="js/auth.js" defer></script>
 </head>
 <body>
     <header id="site-header"></header>
 
     <main class="form-container">
         <h1>Create Account</h1>
-        <p>Join MarketHub to start shopping.</p>
+        <p>Join GoodsPlatz to start shopping.</p>
 
-        <form id="register-form">
+        <form id="register-form" novalidate>
             <label for="name">Full Name</label>
-            <input type="text" id="name" name="name" required>
+            <input type="text" id="name" name="name"
+                   placeholder="Your full name" required autocomplete="name">
 
             <label for="email">Email</label>
-            <input type="email" id="email" name="email" required>
+            <input type="email" id="email" name="email"
+                   placeholder="you@example.com" required autocomplete="email">
 
             <label for="mobile">Mobile Number</label>
-            <input type="tel" id="mobile" name="mobile" required>
+            <input type="tel" id="mobile" name="mobile"
+                   placeholder="10-digit mobile number" required autocomplete="tel">
 
             <label for="password">Password</label>
             <input type="password" id="password" name="password"
-                   minlength="8" required>
+                   placeholder="At least 8 characters" minlength="8"
+                   required autocomplete="new-password">
 
-            <button class="primary-button" type="submit">Register</button>
+            <label for="confirm-password">Confirm Password</label>
+            <input type="password" id="confirm-password" name="confirm-password"
+                   placeholder="Re-enter your password"
+                   required autocomplete="new-password">
+
+            <button class="primary-button" type="submit" id="register-submit">Register</button>
             <p id="form-message" class="form-message" aria-live="polite"></p>
         </form>
 
