@@ -27,3 +27,11 @@
     color: #aaa;
     font-size: 14px;
 }
+
+
+/* Signed-in user display name shown in the navigation bar */
+.nav-user {
+    color: #3156a3;
+    font-weight: bold;
+    font-size: 14px;
+}
