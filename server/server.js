@@ -55,10 +55,18 @@ app.get('/api/health', async (req, res) => {
 // Seller routes
 app.use('/api/seller', require('../routes/sellerRoutes'));
 
+// Product routes
+const productRoutes = require('./routes/products');
+app.use('/api/products', productRoutes);
+
+
 // Start the server
-app.listen(PORT, async () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    await testConnection();
-});
+if (require.main === module) {
+    app.listen(PORT, async () => {
+        console.log(`🚀 Server running on http://localhost:${PORT}`);
+        await testConnection();
+    });
+}
+
 
 module.exports = app;

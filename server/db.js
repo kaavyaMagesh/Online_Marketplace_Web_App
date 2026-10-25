@@ -26,7 +26,13 @@ async function testConnection() {
     }
 }
 
+// Export pool, testConnection, and delegate query/execute for universal compatibility
 module.exports = {
     pool,
-    testConnection
+    testConnection,
+    query: (...args) => pool.query(...args),
+    execute: (...args) => pool.execute(...args),
+    getConnection: (...args) => pool.getConnection(...args)
 };
+
+
