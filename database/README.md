@@ -17,8 +17,11 @@ The database is named `online_marketplace` and is used by customers, sellers, ad
 | File | Purpose |
 |---|---|
 | `schema.sql` | Creates the database and its 12 tables. |
-| `seed.sql` | Inserts sample data for testing, such as product categories. |
+| `seed.sql` | Inserts sample data for testing (categories, users, products). |
+| `seed_data.js` | Node script to seed test categories, users (hashed passwords), and products. |
+| `migrate_day3.js` | Migration script ensuring Day 3 columns (stock_quantity, image, category status). |
 | `README.md` | Explains how to set up the database. |
+
 
 ## 4. How to Set Up the Database
 
