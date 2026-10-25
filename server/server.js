@@ -40,7 +40,7 @@ app.use(
 );
 
 // Protect Admin HTML pages
-const adminPages = ['dashboard', 'customers', 'sellers'];
+const adminPages = ['dashboard', 'customers', 'sellers', 'products', 'categories'];
 
 adminPages.forEach((page) => {
     app.get(`/admin/${page}.html`, requireRole('admin'), (req, res) => {
