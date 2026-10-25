@@ -26,6 +26,46 @@ app.use(session({
 // Static files (frontend)
 app.use(express.static(path.join(__dirname, '../public')));
 
+const { requireRole } = require('../middleware/auth');
+
+// Serve Admin CSS and JavaScript
+app.use(
+    '/admin/css',
+    express.static(path.join(__dirname, '../frontend/admin/css'))
+);
+
+app.use(
+    '/admin/js',
+    express.static(path.join(__dirname, '../frontend/admin/js'))
+);
+
+// Protect Admin HTML pages
+const adminPages = ['dashboard', 'customers', 'sellers'];
+
+adminPages.forEach((page) => {
+    app.get(`/admin/${page}.html`, requireRole('admin'), (req, res) => {
+        res.sendFile(
+            path.join(__dirname, `../frontend/admin/${page}.html`)
+        );
+    });
+});
+
+
+app.get(
+    '/admin/super-dashboard.html',
+    requireRole('super_admin'),
+    (req, res) => {
+        res.sendFile(
+            path.join(
+                __dirname,
+                '../frontend/admin/super-dashboard.html'
+            )
+        );
+    }
+);
+
+
+
 // Root route
 app.get('/', (req, res) => {
     res.json({
@@ -54,6 +94,9 @@ app.get('/api/health', async (req, res) => {
 
 // Seller routes
 app.use('/api/seller', require('../routes/sellerRoutes'));
+
+// Admin and Super Admin routes
+app.use('/api/admin', require('../routes/adminRoutes'));
 
 // Product routes
 const productRoutes = require('./routes/products');
