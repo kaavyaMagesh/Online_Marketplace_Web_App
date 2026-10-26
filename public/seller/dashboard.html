@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seller Dashboard | GoodsPlatz Marketplace</title>
+  <meta name="description" content="Manage your marketplace product catalogue, track active stock levels, update pricing, and add new products with real-time analytics.">
+  <link rel="stylesheet" href="../css/seller-dashboard.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="app-header">
+    <a href="/seller/dashboard.html" class="brand-wrapper" id="brandLogoLink">
+      <div class="brand-logo-icon">G</div>
+      <div>
+        <div class="brand-title">GoodsPlatz</div>
+      </div>
+      <span class="brand-badge">Seller Central</span>
+    </a>
+
+    <div class="header-user-section">
+      <div class="user-identity-card" id="userCard">
+        <div class="user-avatar" id="userAvatarText">S</div>
+        <div>
+          <div class="user-meta-name" id="userDisplayName">Checking session...</div>
+          <div class="user-meta-role" id="userRoleBadge">Seller Portal</div>
+        </div>
+      </div>
+
+      <button type="button" class="btn-header" id="btnSwitchSeller" title="Switch or test login session">
+        <span>🔄</span>
+        <span id="switchSessionBtnLabel">Switch Session</span>
+      </button>
+
+      <button type="button" class="btn-header" id="btnLogout" style="display:none;" title="Logout of current session">
+        <span>🚪</span>
+        <span>Logout</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="dashboard-container">
+
+    <!-- Hero / Welcome Banner -->
+    <section class="hero-banner" aria-label="Welcome and Actions">
+      <div>
+        <h1 class="hero-title">Product <span class="highlight">Inventory Manager</span></h1>
+        <p class="hero-subtitle">
+          View, edit, monitor stock levels, and publish new products to the GoodsPlatz public catalog.
+        </p>
+      </div>
+
+      <div class="hero-actions">
+        <button type="button" class="btn-secondary" id="btnRefreshCatalog">
+          <span>🔄</span> Refresh
+        </button>
+        <button type="button" class="btn-primary" id="btnOpenAddModal">
+          <span>➕</span> Add Product
+        </button>
+      </div>
+    </section>
+
+    <!-- Summary KPI Cards -->
+    <section class="summary-grid" aria-label="Inventory Metrics">
+      <!-- Total Products -->
+      <div class="summary-card card-total" id="cardTotalProducts">
+        <div>
+          <div class="summary-label">Total Listed</div>
+          <div class="summary-number" id="statTotalProducts">0</div>
+          <div class="summary-meta">Catalog items in your account</div>
+        </div>
+        <div class="summary-icon-box">📦</div>
+      </div>
+
+      <!-- Active Products -->
+      <div class="summary-card card-active" id="cardActiveProducts">
+        <div>
+          <div class="summary-label">Active Products</div>
+          <div class="summary-number" id="statActiveProducts">0</div>
+          <div class="summary-meta">Live in public store</div>
+        </div>
+        <div class="summary-icon-box">🟢</div>
+      </div>
+
+      <!-- Low Stock Alert -->
+      <div class="summary-card card-low-stock" id="cardLowStock">
+        <div>
+          <div class="summary-label">Low Stock Alerts</div>
+          <div class="summary-number" id="statLowStock">0</div>
+          <div class="summary-meta">Products with &le; 5 units</div>
+        </div>
+        <div class="summary-icon-box">⚠️</div>
+      </div>
+
+      <!-- Inventory Valuation -->
+      <div class="summary-card card-value" id="cardInventoryValue">
+        <div>
+          <div class="summary-label">Inventory Value</div>
+          <div class="summary-number" id="statInventoryValue">₹0.00</div>
+          <div class="summary-meta">Total stock &times; price value</div>
+        </div>
+        <div class="summary-icon-box">💎</div>
+      </div>
+    </section>
+
+    <!-- Search & Filters Toolbar -->
+    <section class="toolbar-section" aria-label="Search and Filter Controls">
+      <div class="search-box-wrapper">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          id="searchProductsInput" 
+          class="input-search" 
+          placeholder="Filter your products by name or description..." 
+          autocomplete="off"
+        >
+      </div>
+
+      <div class="filters-group">
+        <select id="filterCategorySelect" class="filter-select" aria-label="Filter by category">
+          <option value="all">All Categories</option>
+        </select>
+
+        <select id="filterStatusSelect" class="filter-select" aria-label="Filter by status">
+          <option value="all">All Statuses</option>
+          <option value="active">Active Only</option>
+          <option value="inactive">Inactive (Deactivated)</option>
+          <option value="low-stock">Low Stock (&le; 5)</option>
+          <option value="out-of-stock">Out of Stock (0)</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Products Table Section -->
+    <section class="table-card" aria-label="Products Table">
+      <div class="table-responsive">
+        <table class="products-table" id="sellerProductsTable">
+          <thead>
+            <tr>
+              <th scope="col">Product</th>
+              <th scope="col">Category</th>
+              <th scope="col">Price</th>
+              <th scope="col">Stock Quantity</th>
+              <th scope="col">Status</th>
+              <th scope="col" style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="productsTableBody">
+            <!-- Dynamically populated rows via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State Container -->
+      <div class="empty-state" id="emptyStateContainer" style="display: none;">
+        <div class="empty-state-icon">📦</div>
+        <h2 class="empty-state-title" id="emptyStateTitle">No Products Found</h2>
+        <p class="empty-state-text" id="emptyStateMessage">
+          You haven't listed any products yet, or no products matched your active filters.
+        </p>
+        <button type="button" class="btn-primary" id="btnEmptyStateAction">
+          <span>➕</span> Add Your First Product
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Add / Edit Product Modal -->
+  <div class="modal-overlay" id="productModal" role="dialog" aria-modal="true" aria-labelledby="productModalTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 class="modal-title" id="productModalTitle">Add New Product</h2>
+        <button type="button" class="btn-close-modal" id="btnCloseProductModal" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <form id="productForm" novalidate>
+        <div class="modal-body">
+          <!-- Alert Banner for Form Errors -->
+          <div class="form-alert-banner" id="formAlertBanner" role="alert"></div>
+
+          <!-- Hidden Input for Edit Mode ID -->
+          <input type="hidden" id="formProductId" name="product_id" value="">
+
+          <!-- Product Name -->
+          <div class="form-group">
+            <label for="formProductName" class="form-label">
+              Product Name <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="formProductName" 
+              name="product_name" 
+              class="form-input" 
+              placeholder="e.g. Wireless Noise-Cancelling Headphones" 
+              required
+            >
+            <div class="field-error-msg" id="errProductName">Product name is required.</div>
+          </div>
+
+          <!-- Category and Price Row -->
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="formCategoryId" class="form-label">
+                Category <span class="required">*</span>
+              </label>
+              <select id="formCategoryId" name="category_id" class="form-select" required>
+                <option value="">Select Category</option>
+              </select>
+              <div class="field-error-msg" id="errCategoryId">Select a valid category.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="formPrice" class="form-label">
+                Price (₹) <span class="required">*</span>
+              </label>
+              <input 
+                type="number" 
+                id="formPrice" 
+                name="price" 
+                class="form-input" 
+                placeholder="1499.00" 
+                step="0.01" 
+                min="0" 
+                required
+              >
+              <div class="field-error-msg" id="errPrice">Enter a valid non-negative price.</div>
+            </div>
+          </div>
+
+          <!-- Stock and Status Row -->
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="formStockQuantity" class="form-label">
+                Stock Quantity <span class="required">*</span>
+              </label>
+              <input 
+                type="number" 
+                id="formStockQuantity" 
+                name="stock_quantity" 
+                class="form-input" 
+                placeholder="20" 
+                step="1" 
+                min="0" 
+                required
+              >
+              <div class="field-error-msg" id="errStockQuantity">Enter a non-negative integer.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="formStatus" class="form-label">Status</label>
+              <select id="formStatus" name="status" class="form-select">
+                <option value="active" selected>Active (Visible in store)</option>
+                <option value="inactive">Inactive (Deactivated)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Image URL / Path -->
+          <div class="form-group">
+            <label for="formImage" class="form-label">Product Image Path or URL</label>
+            <input 
+              type="text" 
+              id="formImage" 
+              name="image" 
+              class="form-input" 
+              placeholder="e.g. images/headphones.jpg or https://..."
+            >
+            <div class="image-preview-wrapper" id="imagePreviewContainer" style="display: none;">
+              <img id="imagePreviewThumb" src="" alt="Image preview" class="image-preview-thumb">
+              <span class="image-preview-caption" id="imagePreviewCaption">Image preview</span>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label for="formDescription" class="form-label">Description</label>
+            <textarea 
+              id="formDescription" 
+              name="description" 
+              class="form-textarea" 
+              rows="3" 
+              placeholder="Provide key features, specs, and details..."
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="btnCancelProductModal">Cancel</button>
+          <button type="submit" class="btn-primary" id="btnSubmitProductForm">
+            <span id="btnSubmitSpinner" style="display:none;">⏳</span>
+            <span id="btnSubmitText">Save Product</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Deactivate Confirmation Modal -->
+  <div class="modal-overlay" id="deactivateModal" role="dialog" aria-modal="true" aria-labelledby="deactivateModalTitle">
+    <div class="modal-dialog" style="max-width: 460px;">
+      <div class="modal-header">
+        <h2 class="modal-title" id="deactivateModalTitle">Deactivate Product</h2>
+        <button type="button" class="btn-close-modal" id="btnCloseDeactivateModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+          Are you sure you want to deactivate <strong id="deactivateProductName" style="color: var(--text-main);">this product</strong>?
+        </p>
+        <p style="margin-top: 0.75rem; color: #fca5a5; font-size: 0.85rem; background: var(--rose-bg); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--rose-border);">
+          ⚠️ Once deactivated, this product will no longer appear in the public catalog and cannot be purchased by customers.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="btnCancelDeactivate">Cancel</button>
+        <button type="button" class="btn-primary" id="btnConfirmDeactivate" style="background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);">
+          Deactivate
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Login / Switch Seller Modal -->
+  <div class="modal-overlay" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
+    <div class="modal-dialog" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2 class="modal-title" id="loginModalTitle">Seller Portal Login</h2>
+        <button type="button" class="btn-close-modal" id="btnCloseLoginModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">
+          Log in with your seller account or select a pre-configured test account to test access control and product isolation:
+        </p>
+
+        <!-- Quick 1-Click Test Logins -->
+        <div style="display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 1.5rem;">
+          <button type="button" class="btn-secondary" id="btnQuickSeller1" style="justify-content: flex-start; padding: 0.75rem 1rem;">
+            <span style="font-size: 1.2rem;">🏪</span>
+            <div style="text-align: left;">
+              <div style="font-weight: 700;">TechMart Seller (Seller 1)</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">seller@marketplace.com (Electronics)</div>
+            </div>
+          </button>
+
+          <button type="button" class="btn-secondary" id="btnQuickSeller2" style="justify-content: flex-start; padding: 0.75rem 1rem;">
+            <span style="font-size: 1.2rem;">🛍️</span>
+            <div style="text-align: left;">
+              <div style="font-weight: 700;">UrbanTrends Seller (Seller 2)</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">seller2@marketplace.com (Clothing & Books)</div>
+            </div>
+          </button>
+
+          <button type="button" class="btn-secondary" id="btnQuickCustomer" style="justify-content: flex-start; padding: 0.75rem 1rem;">
+            <span style="font-size: 1.2rem;">👤</span>
+            <div style="text-align: left;">
+              <div style="font-weight: 700;">Customer Account (Test 403 Forbidden)</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">customer@marketplace.com (Regular Buyer)</div>
+            </div>
+          </button>
+        </div>
+
+        <div style="position: relative; text-align: center; margin: 1rem 0;">
+          <hr style="border: 0; border-top: 1px solid var(--border-glass);">
+          <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #0f172a; padding: 0 0.75rem; font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Or Custom Credentials</span>
+        </div>
+
+        <form id="customLoginForm">
+          <div class="form-group">
+            <label for="loginEmail" class="form-label">Email</label>
+            <input type="email" id="loginEmail" class="form-input" placeholder="seller@marketplace.com" required>
+          </div>
+          <div class="form-group">
+            <label for="loginPassword" class="form-label">Password</label>
+            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••••••" value="Marketplace@123" required>
+          </div>
+          <div class="form-alert-banner" id="loginAlertBanner"></div>
+          <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">
+            Log In
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Seller Dashboard Application Logic -->
+  <script src="../js/seller-dashboard.js"></script>
+</body>
+</html>
