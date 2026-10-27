@@ -26,7 +26,12 @@ async function testConnection() {
     }
 }
 
+// Export pool and testConnection, plus direct delegates so route files
+// can call db.execute() / db.query() without importing pool themselves.
 module.exports = {
     pool,
-    testConnection
+    testConnection,
+    query:         (...args) => pool.query(...args),
+    execute:       (...args) => pool.execute(...args),
+    getConnection: (...args) => pool.getConnection(...args)
 };

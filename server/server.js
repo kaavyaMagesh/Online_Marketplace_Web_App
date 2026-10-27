@@ -18,8 +18,8 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: false, // Set to true if using HTTPS
-        httpOnly: true, // Prevents JavaScript from reading the cookie
+        secure: false,   // Set to true if using HTTPS
+        httpOnly: true,  // Prevents JavaScript from reading the cookie
         sameSite: 'lax', // Protects against CSRF in most cases
         maxAge: 1000 * 60 * 60 * 24 // 24 hours
     }
@@ -54,11 +54,36 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
-// Authentication routes (register, login, me, logout)
+// Authentication routes (register, login, me, logout)  — Day 3
 app.use('/api/auth', require('../routes/authRoutes'));
 
-// Seller routes
+// Seller routes — Day 3 (ping-only on this branch; full CRUD on feature/backend-seller)
 app.use('/api/seller', require('../routes/sellerRoutes'));
+
+// ─── Day 4: Public product catalogue endpoints ──────────────────────────────
+
+// GET /api/categories — list active categories for the filter dropdown.
+// Kept inline because it is a single, read-only query with no branching logic.
+app.get('/api/categories', async (req, res) => {
+    try {
+        const [categories] = await pool.query(
+            `SELECT category_id, category_name, description
+             FROM categories
+             WHERE status = 'active'
+             ORDER BY category_name ASC`
+        );
+        res.json(categories);
+    } catch (error) {
+        console.error('Category listing failed:', error.message);
+        res.status(500).json({ message: 'Unable to retrieve categories.' });
+    }
+});
+
+// GET /api/products        — list products (supports ?search= and ?category=)
+// GET /api/products/:id    — single product by ID
+app.use('/api/products', require('./routes/products'));
+
+// ────────────────────────────────────────────────────────────────────────────
 
 // Start the server
 app.listen(PORT, async () => {

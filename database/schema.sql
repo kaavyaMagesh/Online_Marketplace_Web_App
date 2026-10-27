@@ -44,6 +44,8 @@ CREATE TABLE IF NOT EXISTS categories (
     category_id INT AUTO_INCREMENT PRIMARY KEY,
     category_name VARCHAR(100) NOT NULL UNIQUE,
     description TEXT,
+    status ENUM('active', 'inactive')
+        NOT NULL DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -55,15 +57,17 @@ CREATE TABLE IF NOT EXISTS products (
     product_name VARCHAR(200) NOT NULL,
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
-    stock INT NOT NULL DEFAULT 0,
-    image_url VARCHAR(500),
+    stock_quantity INT NOT NULL DEFAULT 0,
+    image VARCHAR(500),
     status ENUM('active', 'inactive')
         NOT NULL DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,
+    stock INT GENERATED ALWAYS AS (stock_quantity) VIRTUAL,
+    image_url VARCHAR(500) GENERATED ALWAYS AS (image) VIRTUAL,
     CHECK (price >= 0),
-    CHECK (stock >= 0),
+    CHECK (stock_quantity >= 0),
     FOREIGN KEY (seller_id) REFERENCES users(user_id),
     FOREIGN KEY (category_id) REFERENCES categories(category_id)
         ON DELETE SET NULL,
