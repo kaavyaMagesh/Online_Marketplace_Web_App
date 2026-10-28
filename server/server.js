@@ -26,6 +26,16 @@ app.use(session({
 // Static files (frontend)
 app.use(express.static(path.join(__dirname, '../public')));
 
+// Authentication API
+app.use('/api/auth', require('../routes/authRoutes'));
+
+// Login page
+app.get('/login', (req, res) => {
+    res.sendFile(
+        path.join(__dirname, '../frontend/login.html')
+    );
+});
+
 const { requireRole } = require('../middleware/auth');
 
 // Serve Admin CSS and JavaScript

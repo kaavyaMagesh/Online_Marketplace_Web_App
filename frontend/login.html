@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Marketplace Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6fa;
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .login-box {
+      background: white;
+      padding: 32px;
+      border-radius: 12px;
+      width: min(350px, 85vw);
+      box-shadow: 0 5px 25px #0001;
+    }
+    input, button {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: 0;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #message { color: #b91c1c; }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h2>Marketplace Login</h2>
+    <form id="loginForm">
+      <input id="email" type="email"
+             placeholder="Email" required>
+      <input id="password" type="password"
+             placeholder="Password" required>
+      <button type="submit">Log In</button>
+    </form>
+    <p id="message" role="alert"></p>
+  </div>
+
+  <script>
+    document.getElementById('loginForm')
+      .addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const message = document.getElementById('message');
+        message.textContent = '';
+
+        try {
+          const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+              email: document.getElementById('email').value,
+              password: document.getElementById('password').value
+            })
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            message.textContent = data.error || 'Login failed';
+            return;
+          }
+
+          if (data.user.role === 'super_admin') {
+            window.location.href = '/admin/super-dashboard.html';
+          } else if (data.user.role === 'admin') {
+            window.location.href = '/admin/dashboard.html';
+          } else {
+            message.textContent =
+              'This demo login is for administrators only.';
+          }
+        } catch (error) {
+          message.textContent = 'Cannot connect to server.';
+        }
+      });
+  </script>
+</body>
+</html>
+
