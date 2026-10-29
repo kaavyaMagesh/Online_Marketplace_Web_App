@@ -31,8 +31,9 @@ function renderNav(user) {
     var rightLinks;
 
     if (user) {
-        // Signed-in: show Cart with counter, user name, and logout button.
+        // Signed-in: show Orders, Cart with counter, user name, and logout button.
         rightLinks =
+            '<a href="orders.html" class="nav-orders-link" id="nav-orders-link">Orders</a>' +
             '<a href="cart.html" class="nav-cart-link" id="nav-cart-link" aria-label="Shopping Cart">' +
             '  🛒 Cart <span class="cart-badge" id="nav-cart-badge">0</span>' +
             '</a>' +

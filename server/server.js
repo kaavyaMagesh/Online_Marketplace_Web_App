@@ -91,6 +91,12 @@ app.use('/api/products', require('./routes/products'));
 // DELETE /api/cart                  — clear user cart
 app.use('/api/cart', require('./routes/cartRoutes'));
 
+// ─── Day 6: Customer Order endpoints ────────────────────────────────────────
+// POST   /api/orders                — checkout active cart and place order
+// GET    /api/orders                — retrieve customer order history
+// GET    /api/orders/:id            — retrieve single order details
+app.use('/api/orders', require('./routes/orderRoutes'));
+
 // ────────────────────────────────────────────────────────────────────────────
 
 // Start the server

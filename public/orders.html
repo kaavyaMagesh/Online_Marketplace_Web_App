@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoodsPlatz | My Orders</title>
+    <meta name="description" content="View your order history, delivery status, and purchased items on GoodsPlatz.">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/common.js" defer></script>
+    <script src="js/orders.js" defer></script>
+</head>
+<body>
+    <header id="site-header"></header>
+
+    <main class="section">
+        <div class="orders-page-header">
+            <h1>My Order History</h1>
+            <p>Track your current orders and review previous purchases.</p>
+        </div>
+
+        <!-- Orders container populated dynamically by orders.js -->
+        <div id="orders-container" aria-live="polite">
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading your orders…</p>
+            </div>
+        </div>
+    </main>
+
+    <div id="site-footer"></div>
+</body>
+</html>

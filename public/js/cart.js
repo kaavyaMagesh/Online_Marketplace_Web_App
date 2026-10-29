@@ -333,8 +333,7 @@ function renderCart(cartData) {
     checkoutBtn.className = "checkout-btn";
     checkoutBtn.textContent = "Proceed to Checkout";
     checkoutBtn.addEventListener("click", function () {
-        // Helpful non-deceptive placeholder for Day 6 Orders implementation
-        alert("Checkout and order placement will be implemented in the next phase (Day 6).\n\nYour cart items are safely stored in your account.");
+        window.location.href = "checkout.html";
     });
     summaryBox.appendChild(checkoutBtn);
 
