@@ -8,8 +8,8 @@
  *   4. Render the product (name, price, image, category, description,
  *      stock availability) using DOM manipulation — never innerHTML
  *      with untrusted data.
- *   5. Provide an Add to Cart action button that honors availability
- *      without falsely claiming an unintegrated backend operation succeeded.
+ *   5. Provide quantity selector and real Add to Cart action button
+ *      calling POST /api/cart/items with credentials.
  *   6. Handle all error states:
  *        - Missing or invalid ID (no request made).
  *        - Product not found (404 from the API).
@@ -260,19 +260,125 @@ function renderProduct(product) {
     var actionDiv = document.createElement("div");
     actionDiv.className = "detail-actions";
 
+    if (inStock) {
+        var qtyGroup = document.createElement("div");
+        qtyGroup.className = "detail-qty-group";
+
+        var qtyLabel = document.createElement("label");
+        qtyLabel.htmlFor = "detail-quantity-input";
+        qtyLabel.textContent = "Quantity: ";
+
+        var qtyInput = document.createElement("input");
+        qtyInput.type = "number";
+        qtyInput.id = "detail-quantity-input";
+        qtyInput.min = "1";
+        qtyInput.max = String(stockQuantity);
+        qtyInput.value = "1";
+        qtyInput.style.width = "60px";
+        qtyInput.style.padding = "6px 8px";
+        qtyInput.style.fontSize = "14px";
+        qtyInput.style.borderRadius = "4px";
+        qtyInput.style.border = "1px solid #d1d5db";
+
+        qtyGroup.appendChild(qtyLabel);
+        qtyGroup.appendChild(qtyInput);
+        actionDiv.appendChild(qtyGroup);
+    }
+
     var addToCartBtn = document.createElement("button");
     addToCartBtn.className = "btn btn-primary add-to-cart-btn";
+
+    var feedbackMsg = document.createElement("p");
+    feedbackMsg.style.fontSize = "14px";
+    feedbackMsg.style.marginTop = "8px";
+    feedbackMsg.style.fontWeight = "500";
+
     if (inStock) {
         addToCartBtn.textContent = "Add to Cart";
         addToCartBtn.addEventListener("click", function () {
-            // Preserved for cart phase: inform user without false claims
-            alert("Cart functionality will be enabled in Day 5. Item: " + (product.product_name || "Product"));
+            var inputEl = document.getElementById("detail-quantity-input");
+            var chosenQty = inputEl ? parseInt(inputEl.value, 10) : 1;
+
+            if (isNaN(chosenQty) || chosenQty < 1) {
+                feedbackMsg.style.color = "#dc2626";
+                feedbackMsg.textContent = "Please select a quantity of at least 1.";
+                return;
+            }
+
+            if (chosenQty > stockQuantity) {
+                feedbackMsg.style.color = "#dc2626";
+                feedbackMsg.textContent = "Cannot exceed available stock of " + stockQuantity + " units.";
+                return;
+            }
+
+            addToCartBtn.disabled = true;
+            addToCartBtn.textContent = "Adding…";
+            feedbackMsg.textContent = "";
+
+            fetch("/api/cart/items", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    product_id: product.product_id,
+                    quantity: chosenQty
+                })
+            })
+            .then(function (res) {
+                if (res.status === 401) {
+                    if (confirm("Please log in to add items to your cart.\n\nGo to login page now?")) {
+                        window.location.href = "login.html";
+                    }
+                    return null;
+                }
+                return res.json().then(function (data) {
+                    if (!res.ok) {
+                        throw new Error(data.error || "Could not add to cart.");
+                    }
+                    return data;
+                });
+            })
+            .then(function (data) {
+                if (!data) {
+                    addToCartBtn.disabled = false;
+                    addToCartBtn.textContent = "Add to Cart";
+                    return;
+                }
+
+                addToCartBtn.textContent = "✓ Added to Cart!";
+                feedbackMsg.style.color = "#16a34a";
+                feedbackMsg.textContent = chosenQty + " unit(s) added to your cart. ";
+
+                var viewCartLink = document.createElement("a");
+                viewCartLink.href = "cart.html";
+                viewCartLink.textContent = "View Cart →";
+                viewCartLink.style.color = "#3156a3";
+                viewCartLink.style.textDecoration = "underline";
+                feedbackMsg.appendChild(viewCartLink);
+
+                if (typeof window.updateCartBadge === "function") {
+                    window.updateCartBadge();
+                }
+
+                setTimeout(function () {
+                    addToCartBtn.disabled = false;
+                    addToCartBtn.textContent = "Add to Cart";
+                }, 2000);
+            })
+            .catch(function (err) {
+                feedbackMsg.style.color = "#dc2626";
+                feedbackMsg.textContent = err.message;
+                addToCartBtn.disabled = false;
+                addToCartBtn.textContent = "Add to Cart";
+            });
         });
     } else {
         addToCartBtn.textContent = "Out of Stock";
         addToCartBtn.disabled = true;
     }
+
     actionDiv.appendChild(addToCartBtn);
+    actionDiv.appendChild(feedbackMsg);
     infoDiv.appendChild(actionDiv);
 
     section.appendChild(imageDiv);

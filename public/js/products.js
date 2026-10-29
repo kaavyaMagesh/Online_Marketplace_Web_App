@@ -233,7 +233,7 @@ function buildProductCard(product) {
     priceEl.textContent = formatPrice(product.price);
     infoDiv.appendChild(priceEl);
 
-    // ── Card footer with link ───────────────────────────────────
+    // ── Card footer with link and Add to Cart ───────────────────
     var footer = document.createElement("div");
     footer.className = "product-card-footer";
 
@@ -242,6 +242,68 @@ function buildProductCard(product) {
     link.href = "product-details.html?id=" + encodeURIComponent(product.product_id);
     link.textContent = "View Details";
     footer.appendChild(link);
+
+    var rawStock = product.stock_quantity !== undefined ? product.stock_quantity : product.stock;
+    var stockQty = Number(rawStock);
+    var inStock  = !isNaN(stockQty) && stockQty > 0;
+
+    var addBtn = document.createElement("button");
+    addBtn.className = "card-add-btn";
+    addBtn.type = "button";
+    if (inStock) {
+        addBtn.textContent = "+ Cart";
+        addBtn.setAttribute("aria-label", "Add " + (product.product_name || "product") + " to cart");
+        addBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            addBtn.disabled = true;
+            addBtn.textContent = "Adding…";
+
+            fetch("/api/cart/items", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "same-origin",
+                body: JSON.stringify({ product_id: product.product_id, quantity: 1 })
+            })
+            .then(function (res) {
+                if (res.status === 401) {
+                    if (confirm("Please log in to add items to your cart.\n\nGo to login page now?")) {
+                        window.location.href = "login.html";
+                    }
+                    return null;
+                }
+                return res.json().then(function (data) {
+                    if (!res.ok) {
+                        throw new Error(data.error || "Could not add item to cart.");
+                    }
+                    return data;
+                });
+            })
+            .then(function (data) {
+                if (!data) {
+                    addBtn.disabled = false;
+                    addBtn.textContent = "+ Cart";
+                    return;
+                }
+                addBtn.textContent = "✓ Added!";
+                if (typeof window.updateCartBadge === "function") {
+                    window.updateCartBadge();
+                }
+                setTimeout(function () {
+                    addBtn.disabled = false;
+                    addBtn.textContent = "+ Cart";
+                }, 1500);
+            })
+            .catch(function (err) {
+                alert(err.message);
+                addBtn.disabled = false;
+                addBtn.textContent = "+ Cart";
+            });
+        });
+    } else {
+        addBtn.textContent = "Out of Stock";
+        addBtn.disabled = true;
+    }
+    footer.appendChild(addBtn);
 
     article.appendChild(imageDiv);
     article.appendChild(infoDiv);

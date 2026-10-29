@@ -4,8 +4,8 @@
  * Rendered on every page. On load it calls GET /api/auth/me to find out
  * whether the current visitor is signed in, then shows the correct nav links.
  *
- * Signed-out nav:  Home | Products | Login | Sign Up
- * Signed-in nav:   Home | Products | Hi, <Name> | Logout
+ * Signed-out nav:  Home | Products | Cart | Login | Sign Up
+ * Signed-in nav:   Home | Products | Cart (N) | Hi, <Name> | Logout
  */
 
 var header = document.getElementById("site-header");
@@ -31,13 +31,17 @@ function renderNav(user) {
     var rightLinks;
 
     if (user) {
-        // Signed-in: show the user's name and a logout button.
+        // Signed-in: show Cart with counter, user name, and logout button.
         rightLinks =
+            '<a href="cart.html" class="nav-cart-link" id="nav-cart-link" aria-label="Shopping Cart">' +
+            '  🛒 Cart <span class="cart-badge" id="nav-cart-badge">0</span>' +
+            '</a>' +
             '<span class="nav-user">Hi, ' + escapeHtml(user.name) + '</span>' +
             '<button class="nav-button" id="nav-logout-btn">Logout</button>';
     } else {
-        // Signed-out: show Login and Sign Up links.
+        // Signed-out: show Cart, Login, and Sign Up links.
         rightLinks =
+            '<a href="cart.html" class="nav-cart-link" id="nav-cart-link" aria-label="Shopping Cart">🛒 Cart</a>' +
             '<a href="login.html">Login</a>' +
             '<a href="register.html" class="nav-button">Sign Up</a>';
     }
@@ -57,6 +61,11 @@ function renderNav(user) {
     if (logoutBtn) {
         logoutBtn.addEventListener("click", handleLogout);
     }
+
+    // Refresh cart badge if logged in
+    if (user) {
+        updateCartBadge();
+    }
 }
 
 /**
@@ -72,6 +81,38 @@ function escapeHtml(str) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
 }
+
+/**
+ * Update the shopping cart badge count in the navigation.
+ * Can be called after any cart addition/modification across pages.
+ */
+function updateCartBadge() {
+    var badge = document.getElementById("nav-cart-badge");
+    if (!badge) return;
+
+    fetch("/api/cart", {
+        method: "GET",
+        credentials: "same-origin"
+    })
+    .then(function (response) {
+        if (response.ok) {
+            return response.json();
+        }
+        return null;
+    })
+    .then(function (data) {
+        if (!data || !badge) return;
+        var total = Number(data.total_items) || 0;
+        badge.textContent = total;
+        badge.style.display = total > 0 ? "inline-block" : "inline-block";
+    })
+    .catch(function () {
+        // Silently ignore if unauthenticated or network failure
+    });
+}
+
+// Expose globally for other page scripts
+window.updateCartBadge = updateCartBadge;
 
 /**
  * Call GET /api/auth/me, render the nav, and return the user (or null).
@@ -98,7 +139,7 @@ function loadNav() {
 }
 
 /**
- * Handle the Logout button click in the nav.
+ * Logout button click
  */
 function handleLogout() {
     fetch("/api/auth/logout", {
@@ -106,11 +147,9 @@ function handleLogout() {
         credentials: "same-origin"
     })
     .then(function () {
-        // Redirect to home regardless of the response status.
         window.location.href = "index.html";
     })
     .catch(function () {
-        // Even on network failure, redirect — the session will expire.
         window.location.href = "index.html";
     });
 }

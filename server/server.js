@@ -83,6 +83,14 @@ app.get('/api/categories', async (req, res) => {
 // GET /api/products/:id    — single product by ID
 app.use('/api/products', require('./routes/products'));
 
+// ─── Day 5: Customer Cart endpoints ─────────────────────────────────────────
+// GET    /api/cart                  — retrieve user cart with calculated totals
+// POST   /api/cart/items            — add product or increase quantity
+// PATCH  /api/cart/items/:productId — update quantity
+// DELETE /api/cart/items/:productId — remove product from cart
+// DELETE /api/cart                  — clear user cart
+app.use('/api/cart', require('./routes/cartRoutes'));
+
 // ────────────────────────────────────────────────────────────────────────────
 
 // Start the server
