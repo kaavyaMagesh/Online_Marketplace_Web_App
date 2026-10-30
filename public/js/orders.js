@@ -288,6 +288,20 @@ function buildOrderCard(order) {
     var footerRow = document.createElement("div");
     footerRow.className = "order-card-footer";
 
+    // Day 7: Customer Cancellation Button for eligible orders (pending or confirmed)
+    var isCancellable = ["pending", "confirmed"].includes((order.status || "").toLowerCase());
+    if (isCancellable) {
+        var cancelBtn = document.createElement("button");
+        cancelBtn.type = "button";
+        cancelBtn.className = "order-cancel-btn";
+        cancelBtn.textContent = "Cancel Order";
+        cancelBtn.setAttribute("aria-label", "Cancel Order #" + order.order_id);
+        cancelBtn.addEventListener("click", function () {
+            handleCancelOrder(order.order_id, card, badge, cancelBtn);
+        });
+        footerRow.appendChild(cancelBtn);
+    }
+
     var toggleBtn = document.createElement("button");
     toggleBtn.type = "button";
     toggleBtn.className = "order-toggle-btn";
@@ -311,6 +325,60 @@ function buildOrderCard(order) {
     card.appendChild(footerRow);
 
     return card;
+}
+
+/* ─── Day 7: Customer Order Cancellation Handler ─────────────── */
+
+function handleCancelOrder(orderId, card, badge, cancelBtn) {
+    var confirmed = window.confirm(
+        "Are you sure you want to cancel Order #" + orderId + "?\n\n" +
+        "This will restore all items to the store inventory and mark your order as Cancelled."
+    );
+    if (!confirmed) return;
+
+    cancelBtn.disabled = true;
+    cancelBtn.textContent = "Cancelling…";
+
+    fetch("/api/orders/" + encodeURIComponent(orderId) + "/cancel", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin"
+    })
+    .then(function (res) {
+        return res.json().then(function (data) {
+            if (!res.ok) {
+                throw new Error(data.error || "Failed to cancel order #" + orderId);
+            }
+            return data;
+        });
+    })
+    .then(function (data) {
+        badge.className = "order-status-badge order-badge-cancelled";
+        badge.textContent = "Cancelled";
+        cancelBtn.remove();
+        showOrderFeedback(card, data.message || "Order #" + orderId + " cancelled successfully.", "success");
+    })
+    .catch(function (err) {
+        cancelBtn.disabled = false;
+        cancelBtn.textContent = "Cancel Order";
+        showOrderFeedback(card, err.message, "error");
+    });
+}
+
+function showOrderFeedback(card, message, type) {
+    var existing = card.querySelector(".order-card-alert");
+    if (existing) existing.remove();
+
+    var alert = document.createElement("div");
+    alert.className = "order-card-alert " + (type === "success" ? "cart-alert-success" : "cart-alert-error");
+    alert.textContent = message;
+
+    var footer = card.querySelector(".order-card-footer");
+    if (footer) {
+        card.insertBefore(alert, footer);
+    } else {
+        card.appendChild(alert);
+    }
 }
 
 /* ─── Expandable Order Details Loader ────────────────────────── */

@@ -21,6 +21,7 @@ const router  = express.Router();
 const bcrypt  = require('bcryptjs');
 
 const { pool } = require('../server/db');
+const { isAuthenticated } = require('../middleware/auth');
 
 /* ─── Helpers ─────────────────────────────────────────────────── */
 
@@ -216,6 +217,176 @@ router.post('/logout', (req, res) => {
         res.clearCookie('connect.sid');
         return res.status(200).json({ message: 'Logged out successfully.' });
     });
+});
+
+/* ─── Day 7: Customer Profile Endpoints ───────────────────────── */
+
+/**
+ * GET /api/auth/profile
+ * Returns detailed profile for the authenticated user, including
+ * account creation timestamp and saved delivery address.
+ */
+router.get('/profile', isAuthenticated, async (req, res) => {
+    try {
+        const userId = req.session.user.user_id;
+
+        // 1. Fetch user data (excluding password)
+        const [users] = await pool.query(
+            `SELECT user_id, name, email, phone, role, status, created_at, updated_at
+             FROM users
+             WHERE user_id = ?`,
+            [userId]
+        );
+
+        if (users.length === 0) {
+            return res.status(404).json({ error: 'User profile not found.' });
+        }
+
+        const user = users[0];
+
+        // 2. Fetch customer's primary or most recent delivery address
+        const [addresses] = await pool.query(
+            `SELECT address_id, address_line, city, state, postal_code, country, is_default, created_at
+             FROM addresses
+             WHERE user_id = ?
+             ORDER BY is_default DESC, created_at DESC
+             LIMIT 1`,
+            [userId]
+        );
+
+        res.json({
+            user: {
+                user_id:    user.user_id,
+                name:       user.name,
+                email:      user.email,
+                phone:      user.phone || '',
+                role:       user.role,
+                status:     user.status,
+                created_at: user.created_at,
+                updated_at: user.updated_at
+            },
+            address: addresses.length > 0 ? addresses[0] : null
+        });
+    } catch (err) {
+        console.error('Profile fetch error:', err.message);
+        res.status(500).json({ error: 'Unable to retrieve user profile. Please try again.' });
+    }
+});
+
+/**
+ * PUT /api/auth/profile
+ * Allows customer to update their display name and mobile phone.
+ * Email, role, and status remain read-only for safety.
+ * Synchronizes changes with req.session.user.
+ */
+router.put('/profile', isAuthenticated, async (req, res) => {
+    try {
+        const userId = req.session.user.user_id;
+        const name   = (req.body.name  || '').trim();
+        const phone  = (req.body.phone || '').trim();
+
+        if (!name) {
+            return res.status(400).json({ error: 'Name is required.' });
+        }
+
+        if (name.length > 100) {
+            return res.status(400).json({ error: 'Name cannot exceed 100 characters.' });
+        }
+
+        if (!phone || !isValidMobile(phone)) {
+            return res.status(400).json({ error: 'Mobile number must be exactly 10 digits.' });
+        }
+
+        // Update database
+        await pool.query(
+            `UPDATE users
+             SET name = ?, phone = ?
+             WHERE user_id = ?`,
+            [name, phone, userId]
+        );
+
+        // Synchronize active session so navbar and future requests reflect new data
+        req.session.user.name  = name;
+        req.session.user.phone = phone;
+
+        res.json({
+            message: 'Profile updated successfully.',
+            user: {
+                user_id: userId,
+                name:    name,
+                email:   req.session.user.email,
+                phone:   phone,
+                role:    req.session.user.role,
+                status:  req.session.user.status
+            }
+        });
+    } catch (err) {
+        console.error('Profile update error:', err.message);
+        res.status(500).json({ error: 'Failed to update profile. Please try again.' });
+    }
+});
+
+/**
+ * PUT /api/auth/password
+ * Dedicated password update endpoint requiring current password confirmation.
+ * Hashes new password with bcryptjs before saving.
+ */
+router.put('/password', isAuthenticated, async (req, res) => {
+    try {
+        const userId          = req.session.user.user_id;
+        const currentPassword = req.body.current_password || '';
+        const newPassword     = req.body.new_password     || '';
+
+        if (!currentPassword) {
+            return res.status(400).json({ error: 'Current password is required.' });
+        }
+
+        if (!newPassword) {
+            return res.status(400).json({ error: 'New password is required.' });
+        }
+
+        if (newPassword.length < 8) {
+            return res.status(400).json({ error: 'New password must be at least 8 characters long.' });
+        }
+
+        // Fetch stored password hash
+        const [rows] = await pool.query(
+            'SELECT password FROM users WHERE user_id = ?',
+            [userId]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        const storedHash = rows[0].password;
+
+        // Verify current password
+        const isMatch = await bcrypt.compare(currentPassword, storedHash);
+        if (!isMatch) {
+            return res.status(400).json({ error: 'Current password is incorrect.' });
+        }
+
+        // Prevent reusing identical password
+        const isSame = await bcrypt.compare(newPassword, storedHash);
+        if (isSame) {
+            return res.status(400).json({ error: 'New password cannot be the same as your current password.' });
+        }
+
+        // Hash and persist new password
+        const saltRounds = 10;
+        const newHash = await bcrypt.hash(newPassword, saltRounds);
+
+        await pool.query(
+            'UPDATE users SET password = ? WHERE user_id = ?',
+            [newHash, userId]
+        );
+
+        res.json({ message: 'Password changed successfully.' });
+    } catch (err) {
+        console.error('Password change error:', err.message);
+        res.status(500).json({ error: 'Failed to update password. Please try again.' });
+    }
 });
 
 module.exports = router;

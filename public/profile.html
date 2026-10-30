@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoodsPlatz | My Profile</title>
+    <meta name="description" content="View and manage your GoodsPlatz customer account details and password.">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/common.js" defer></script>
+    <script src="js/profile.js" defer></script>
+</head>
+<body>
+    <header id="site-header"></header>
+
+    <main class="section">
+        <div class="profile-page-header">
+            <h1>My Profile</h1>
+            <p>Manage your personal details, saved delivery address, and account security.</p>
+        </div>
+
+        <!-- Profile content container (populated dynamically) -->
+        <div id="profile-container" aria-live="polite">
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading your profile…</p>
+            </div>
+        </div>
+    </main>
+
+    <div id="site-footer"></div>
+</body>
+</html>

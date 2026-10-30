@@ -31,13 +31,13 @@ function renderNav(user) {
     var rightLinks;
 
     if (user) {
-        // Signed-in: show Orders, Cart with counter, user name, and logout button.
+        // Signed-in: show Orders, Cart with counter, Profile link, and logout button.
         rightLinks =
             '<a href="orders.html" class="nav-orders-link" id="nav-orders-link">Orders</a>' +
             '<a href="cart.html" class="nav-cart-link" id="nav-cart-link" aria-label="Shopping Cart">' +
             '  🛒 Cart <span class="cart-badge" id="nav-cart-badge">0</span>' +
             '</a>' +
-            '<span class="nav-user">Hi, ' + escapeHtml(user.name) + '</span>' +
+            '<a href="profile.html" class="nav-user" id="nav-profile-link" title="My Profile">Hi, ' + escapeHtml(user.name) + '</a>' +
             '<button class="nav-button" id="nav-logout-btn">Logout</button>';
     } else {
         // Signed-out: show Cart, Login, and Sign Up links.
