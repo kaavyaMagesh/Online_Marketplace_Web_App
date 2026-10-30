@@ -132,6 +132,7 @@ function showEmptyOrders() {
 
     var div = document.createElement("div");
     div.className = "empty-state";
+    div.setAttribute("role", "status");
 
     var icon = document.createElement("div");
     icon.className = "empty-icon";
@@ -141,12 +142,12 @@ function showEmptyOrders() {
     h2.textContent = "No orders found";
 
     var p = document.createElement("p");
-    p.textContent = "You haven't placed any orders with GoodsPlatz yet.";
+    p.textContent = "You haven't placed any orders with GoodsPlatz yet. Browse verified sellers and enjoy seamless Cash on Delivery.";
 
     var btn = document.createElement("a");
     btn.className = "primary-button";
     btn.href = "products.html";
-    btn.textContent = "Start Shopping";
+    btn.textContent = "Explore Products";
     btn.style.display = "inline-block";
     btn.style.marginTop = "16px";
 
@@ -387,7 +388,11 @@ function loadOrderDetails(orderId, targetContainer) {
     // If already loaded, do not re-fetch
     if (targetContainer.dataset.loaded === "true") return;
 
-    targetContainer.innerHTML = '<p style="color: #6b7280; font-size: 13px; margin: 12px 0;">Loading items and delivery address…</p>';
+    targetContainer.innerHTML =
+        '<div class="loading-state" style="padding: 16px 0;" role="status">' +
+        '  <div class="spinner"></div>' +
+        '  <p style="font-size: 13px; color: #6b7280; margin: 8px 0 0;">Loading order details…</p>' +
+        '</div>';
 
     fetch("/api/orders/" + encodeURIComponent(orderId), { credentials: "same-origin" })
         .then(function (res) {
@@ -480,11 +485,31 @@ function loadOrderDetails(orderId, targetContainer) {
         })
         .catch(function (err) {
             targetContainer.innerHTML = "";
+            var errWrapper = document.createElement("div");
+            errWrapper.style.padding = "10px 0";
+
             var errP = document.createElement("p");
             errP.style.color = "#dc2626";
             errP.style.fontSize = "13px";
-            errP.textContent = "⚠️ " + err.message;
-            targetContainer.appendChild(errP);
+            errP.style.margin = "0 0 8px";
+            var friendlyMsg = (typeof window.formatCustomerError === "function")
+                ? window.formatCustomerError(err)
+                : (err.message || "Failed to load order items.");
+            errP.textContent = "⚠️ " + friendlyMsg;
+            errWrapper.appendChild(errP);
+
+            var retryBtn = document.createElement("button");
+            retryBtn.type = "button";
+            retryBtn.className = "retry-btn";
+            retryBtn.style.padding = "6px 12px";
+            retryBtn.style.fontSize = "12px";
+            retryBtn.textContent = "Retry Loading";
+            retryBtn.addEventListener("click", function () {
+                loadOrderDetails(orderId, targetContainer);
+            });
+            errWrapper.appendChild(retryBtn);
+
+            targetContainer.appendChild(errWrapper);
         });
 }
 
@@ -515,9 +540,10 @@ function loadOrders() {
         })
         .catch(function (err) {
             console.error("Orders load error:", err.message);
-            showErrorState(err.message.includes("Failed to fetch")
-                ? "Could not connect to the server. Make sure the server is running."
-                : err.message);
+            var friendlyMsg = (typeof window.formatCustomerError === "function")
+                ? window.formatCustomerError(err)
+                : (err.message || "An unexpected error occurred while loading your orders.");
+            showErrorState(friendlyMsg);
         });
 }
 

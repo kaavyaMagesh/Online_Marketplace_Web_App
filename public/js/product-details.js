@@ -313,6 +313,7 @@ function renderProduct(product) {
 
             addToCartBtn.disabled = true;
             addToCartBtn.textContent = "Adding…";
+            addToCartBtn.setAttribute("aria-busy", "true");
             feedbackMsg.textContent = "";
 
             fetch("/api/cart/items", {
@@ -326,6 +327,9 @@ function renderProduct(product) {
             })
             .then(function (res) {
                 if (res.status === 401) {
+                    addToCartBtn.disabled = false;
+                    addToCartBtn.textContent = "Add to Cart";
+                    addToCartBtn.removeAttribute("aria-busy");
                     if (confirm("Please log in to add items to your cart.\n\nGo to login page now?")) {
                         window.location.href = "login.html";
                     }
@@ -339,6 +343,7 @@ function renderProduct(product) {
                 });
             })
             .then(function (data) {
+                addToCartBtn.removeAttribute("aria-busy");
                 if (!data) {
                     addToCartBtn.disabled = false;
                     addToCartBtn.textContent = "Add to Cart";
@@ -366,8 +371,12 @@ function renderProduct(product) {
                 }, 2000);
             })
             .catch(function (err) {
+                addToCartBtn.removeAttribute("aria-busy");
                 feedbackMsg.style.color = "#dc2626";
-                feedbackMsg.textContent = err.message;
+                var friendlyMsg = (typeof window.formatCustomerError === "function")
+                    ? window.formatCustomerError(err)
+                    : (err.message || "Could not add to cart.");
+                feedbackMsg.textContent = friendlyMsg;
                 addToCartBtn.disabled = false;
                 addToCartBtn.textContent = "Add to Cart";
             });
@@ -437,12 +446,10 @@ function loadProduct() {
         })
         .catch(function (err) {
             console.error("Failed to load product:", err.message);
-            showError(
-                "Could not load product",
-                err.message.includes("Failed to fetch")
-                    ? "Could not reach the server. Make sure the server is running."
-                    : err.message
-            );
+            var friendlyMsg = (typeof window.formatCustomerError === "function")
+                ? window.formatCustomerError(err)
+                : (err.message || "We could not load this product. Please try again.");
+            showError("Could not load product", friendlyMsg);
         });
 }
 

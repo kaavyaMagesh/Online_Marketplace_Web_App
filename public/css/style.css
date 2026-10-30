@@ -1787,3 +1787,259 @@ a.nav-user:hover {
         grid-template-columns: 1fr;
     }
 }
+
+
+/* ==========================================================================
+   Day 8 — Responsive Polish, Customer Feedback & Accessibility
+   ========================================================================== */
+
+/* ── Accessible Focus Rings ────────────────────────────────────────────── */
+:focus-visible {
+    outline: 2px solid #3156a3;
+    outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid #3156a3;
+    outline-offset: 2px;
+}
+
+/* ── Interactive Loading & Feedback States ─────────────────────────────── */
+.cart-item.cart-item-busy {
+    opacity: 0.55;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.card-add-btn[aria-busy="true"],
+.add-to-cart-btn[aria-busy="true"] {
+    opacity: 0.75;
+    cursor: wait;
+}
+
+/* ── Order Drawer Retry & Action Buttons ───────────────────────────────── */
+.order-action-btn,
+.order-drawer-retry-btn {
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.order-drawer-retry-btn:hover {
+    background: #e5e7eb;
+    color: #111827;
+    border-color: #9ca3af;
+}
+
+/* ── Profile Empty Address State ───────────────────────────────────────── */
+.profile-no-address-box {
+    text-align: center;
+    padding: 28px 16px;
+    background: #f9fafb;
+    border: 1px dashed #d1d5db;
+    border-radius: 8px;
+    margin: 8px 0;
+}
+
+.profile-no-address-icon {
+    font-size: 36px;
+    display: inline-block;
+    margin-bottom: 8px;
+}
+
+.profile-no-address-box h4 {
+    margin: 0 0 6px 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.profile-no-address-box p {
+    margin: 0 0 16px 0;
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.profile-no-address-box .profile-btn {
+    display: inline-block;
+    text-decoration: none;
+}
+
+/* ── Tablet Refinements (641px - 1024px) ───────────────────────────────── */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .product-detail {
+        gap: 28px;
+    }
+
+    .checkout-layout,
+    .cart-layout {
+        gap: 24px;
+    }
+}
+
+/* ── Small Devices & Mobile Breakpoint (<= 480px) ───────────────────────── */
+@media (max-width: 480px) {
+    .navbar {
+        padding: 12px 14px;
+    }
+
+    .navbar .brand {
+        font-size: 20px;
+    }
+
+    .nav-links {
+        gap: 8px 12px;
+        width: 100%;
+    }
+
+    .nav-links a {
+        font-size: 13.5px;
+    }
+
+    .hero {
+        padding: 28px 14px;
+    }
+
+    .section {
+        padding: 20px 14px;
+    }
+
+    .search-filter-bar {
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .search-group {
+        width: 100%;
+    }
+
+    .search-group input {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+
+    .search-btn {
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+
+    .category-select {
+        width: 100%;
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+
+    .product-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .product-detail-image {
+        min-height: 200px;
+    }
+
+    .product-detail-image img {
+        height: 220px;
+    }
+
+    .product-detail-info h1 {
+        font-size: 22px;
+    }
+
+    .detail-actions {
+        width: 100%;
+    }
+
+    .add-to-cart-btn {
+        width: 100%;
+        text-align: center;
+        padding: 12px 16px;
+    }
+
+    .cart-item {
+        grid-template-columns: 60px 1fr;
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .cart-item-thumb {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+    }
+
+    .order-card {
+        padding: 14px;
+    }
+
+    .order-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .order-card-body {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .profile-card {
+        padding: 18px 14px;
+    }
+
+    .profile-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .checkout-summary-panel {
+        padding: 18px 14px;
+    }
+}
+
+/* ── Tiny Viewports (<= 360px, e.g. 320px) ────────────────────────────── */
+@media (max-width: 360px) {
+    .navbar {
+        padding: 10px 12px;
+    }
+
+    .navbar .brand {
+        font-size: 18px;
+    }
+
+    .primary-button,
+    .nav-button {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .order-item-card {
+        grid-template-columns: 36px 1fr;
+    }
+
+    .order-item-thumb {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+
+    .order-item-subtotal {
+        grid-column: 1 / -1;
+        justify-self: end;
+    }
+}

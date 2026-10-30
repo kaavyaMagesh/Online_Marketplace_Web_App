@@ -209,10 +209,39 @@ function renderProfileView(profileData) {
         addrBox.appendChild(addrCountry);
         addrCard.appendChild(addrBox);
     } else {
+        var noAddrBox = document.createElement("div");
+        noAddrBox.className = "profile-no-address-box";
+
+        var noAddrIcon = document.createElement("div");
+        noAddrIcon.className = "empty-icon";
+        noAddrIcon.style.fontSize = "28px";
+        noAddrIcon.style.marginBottom = "8px";
+        noAddrIcon.textContent = "📦";
+
+        var noAddrTitle = document.createElement("h4");
+        noAddrTitle.style.margin = "0 0 4px";
+        noAddrTitle.style.fontSize = "14px";
+        noAddrTitle.style.color = "#111827";
+        noAddrTitle.textContent = "No saved address yet";
+
         var noAddr = document.createElement("p");
         noAddr.className = "profile-no-address-note";
-        noAddr.textContent = "No saved address yet. Your shipping address is automatically saved when you place an order.";
-        addrCard.appendChild(noAddr);
+        noAddr.textContent = "Your shipping address is automatically saved when you place an order.";
+
+        var exploreLink = document.createElement("a");
+        exploreLink.className = "secondary-button";
+        exploreLink.href = "products.html";
+        exploreLink.style.display = "inline-block";
+        exploreLink.style.marginTop = "10px";
+        exploreLink.style.fontSize = "13px";
+        exploreLink.style.padding = "6px 14px";
+        exploreLink.textContent = "Start Shopping";
+
+        noAddrBox.appendChild(noAddrIcon);
+        noAddrBox.appendChild(noAddrTitle);
+        noAddrBox.appendChild(noAddr);
+        noAddrBox.appendChild(exploreLink);
+        addrCard.appendChild(noAddrBox);
     }
 
     leftCol.appendChild(addrCard);
@@ -501,9 +530,10 @@ function loadProfile() {
     })
     .catch(function (err) {
         console.error("Profile load error:", err.message);
-        showErrorState(err.message.includes("Failed to fetch")
-            ? "Could not connect to the server. Please check your connection."
-            : err.message);
+        var friendlyMsg = (typeof window.formatCustomerError === "function")
+            ? window.formatCustomerError(err)
+            : (err.message || "Could not connect to the server. Please check your connection.");
+        showErrorState(friendlyMsg);
     });
 }
 

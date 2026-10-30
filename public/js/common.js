@@ -116,6 +116,31 @@ function updateCartBadge() {
 window.updateCartBadge = updateCartBadge;
 
 /**
+ * Format raw technical errors into helpful customer-facing messages.
+ * Preserves specific backend validation messages if present.
+ * @param {Error|string|object} err
+ * @returns {string}
+ */
+function formatCustomerError(err) {
+    if (!err) return "An unexpected error occurred. Please try again.";
+    var msg = (typeof err === "string") ? err : (err.message || "");
+    if (!msg) return "An unexpected error occurred. Please try again.";
+
+    // Detect common network/fetch failures
+    if (msg.includes("Failed to fetch") || msg.includes("NetworkError") || msg.includes("Network request failed")) {
+        return "Unable to connect to GoodsPlatz. Please check your internet connection and try again.";
+    }
+
+    // Detect HTTP status messages without details
+    if (/^Server returned (5\d\d)/.test(msg) || msg.includes("Internal Server Error")) {
+        return "Our servers are temporarily busy. Please wait a moment and try again.";
+    }
+
+    return msg;
+}
+window.formatCustomerError = formatCustomerError;
+
+/**
  * Call GET /api/auth/me, render the nav, and return the user (or null).
  */
 function loadNav() {

@@ -35,3 +35,23 @@
     font-weight: bold;
     font-size: 14px;
 }
+
+/* Day 8 — Responsive Adjustments for Auth Pages */
+@media (max-width: 480px) {
+    .form-container {
+        margin: 24px 14px;
+        padding: 20px 16px;
+        border-radius: 8px;
+    }
+
+    .form-container h1 {
+        font-size: 22px;
+    }
+}
+
+@media (max-width: 340px) {
+    .form-container {
+        margin: 16px 8px;
+        padding: 16px 12px;
+    }
+}

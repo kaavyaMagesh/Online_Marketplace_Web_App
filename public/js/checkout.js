@@ -563,9 +563,10 @@ function loadCheckout() {
         })
         .catch(function (err) {
             console.error("Checkout load error:", err.message);
-            showErrorState(err.message.includes("Failed to fetch")
-                ? "Could not reach the server. Make sure the server is running."
-                : err.message);
+            var friendlyMsg = (typeof window.formatCustomerError === "function")
+                ? window.formatCustomerError(err)
+                : (err.message || "An error occurred while loading checkout.");
+            showErrorState(friendlyMsg);
         });
 }
 

@@ -418,10 +418,10 @@ function buildCartItemRow(item) {
 
     var minusBtn = document.createElement("button");
     minusBtn.textContent = "−";
-    minusBtn.setAttribute("aria-label", "Decrease quantity");
+    minusBtn.setAttribute("aria-label", "Decrease quantity of " + (item.product_name || "item"));
     minusBtn.disabled = item.quantity <= 1;
     minusBtn.addEventListener("click", function () {
-        updateItemQuantity(item.product_id, { action: "decrease" }, stepper);
+        updateItemQuantity(item.product_id, { action: "decrease" }, stepper, row);
     });
 
     var qtyInput = document.createElement("input");
@@ -429,18 +429,19 @@ function buildCartItemRow(item) {
     qtyInput.min = "1";
     qtyInput.max = String(item.stock || 99);
     qtyInput.value = item.quantity;
-    qtyInput.setAttribute("aria-label", "Item quantity");
+    qtyInput.dataset.lastConfirmed = item.quantity;
+    qtyInput.setAttribute("aria-label", "Quantity for " + (item.product_name || "item"));
 
     // Handle direct input change
     qtyInput.addEventListener("change", function () {
         var val = parseInt(qtyInput.value, 10);
         if (isNaN(val) || val < 1) {
-            qtyInput.value = item.quantity;
+            qtyInput.value = qtyInput.dataset.lastConfirmed || item.quantity;
             showAlert("Quantity must be at least 1.", "error");
             return;
         }
         if (val === item.quantity) return;
-        updateItemQuantity(item.product_id, { quantity: val }, stepper);
+        updateItemQuantity(item.product_id, { quantity: val }, stepper, row, qtyInput);
     });
 
     // Enter key submits change
@@ -452,10 +453,10 @@ function buildCartItemRow(item) {
 
     var plusBtn = document.createElement("button");
     plusBtn.textContent = "+";
-    plusBtn.setAttribute("aria-label", "Increase quantity");
+    plusBtn.setAttribute("aria-label", "Increase quantity of " + (item.product_name || "item"));
     plusBtn.disabled = item.quantity >= item.stock;
     plusBtn.addEventListener("click", function () {
-        updateItemQuantity(item.product_id, { action: "increase" }, stepper);
+        updateItemQuantity(item.product_id, { action: "increase" }, stepper, row);
     });
 
     stepper.appendChild(minusBtn);
@@ -522,23 +523,30 @@ function loadCart() {
     })
     .catch(function (err) {
         console.error("Failed to load cart:", err.message);
-        showErrorState(err.message.includes("Failed to fetch")
-            ? "Could not connect to the server. Make sure the server is running."
-            : err.message);
+        var friendlyMsg = (typeof window.formatCustomerError === "function")
+            ? window.formatCustomerError(err)
+            : (err.message || "An unexpected error occurred while loading your cart.");
+        showErrorState(friendlyMsg);
     });
 }
 
 /**
  * Update item quantity via PATCH /api/cart/items/:productId.
- * Disables stepper during flight to prevent race conditions.
+ * Dims the row and disables stepper during flight to prevent race conditions.
  * @param {number} productId
  * @param {object} payload
- * @param {HTMLElement} stepperEl
+ * @param {HTMLElement} [stepperEl]
+ * @param {HTMLElement} [rowEl]
+ * @param {HTMLInputElement} [inputEl]
  */
-function updateItemQuantity(productId, payload, stepperEl) {
+function updateItemQuantity(productId, payload, stepperEl, rowEl, inputEl) {
     if (stepperEl) {
         var buttons = stepperEl.querySelectorAll("button, input");
         buttons.forEach(function (btn) { btn.disabled = true; });
+    }
+    if (rowEl) {
+        rowEl.style.opacity = "0.6";
+        rowEl.style.pointerEvents = "none";
     }
 
     fetch("/api/cart/items/" + encodeURIComponent(productId), {
@@ -561,7 +569,14 @@ function updateItemQuantity(productId, payload, stepperEl) {
         loadCart();
     })
     .catch(function (err) {
-        showAlert(err.message, "error");
+        // Revert input field to last confirmed quantity if direct input failed
+        if (inputEl && inputEl.dataset && inputEl.dataset.lastConfirmed) {
+            inputEl.value = inputEl.dataset.lastConfirmed;
+        }
+        var friendlyMsg = (typeof window.formatCustomerError === "function")
+            ? window.formatCustomerError(err)
+            : (err.message || "Failed to update quantity.");
+        showAlert(friendlyMsg, "error");
         // Reload cart to restore accurate state
         loadCart();
     });

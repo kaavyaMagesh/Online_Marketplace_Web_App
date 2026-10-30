@@ -103,6 +103,7 @@ function showEmpty(search, category) {
 
     var div = document.createElement("div");
     div.className = "empty-state";
+    div.setAttribute("role", "status");
 
     var icon = document.createElement("div");
     icon.className = "empty-icon";
@@ -113,18 +114,34 @@ function showEmpty(search, category) {
 
     var p = document.createElement("p");
     if (search && category) {
-        p.textContent = 'No products matched "' + search + '" in that category.';
+        p.textContent = 'No products matched "' + search + '" in ' + category + '.';
     } else if (search) {
-        p.textContent = 'No products matched "' + search + '". Try a different search term.';
+        p.textContent = 'No products matched "' + search + '". Try checking spelling or using a broader term.';
     } else if (category) {
-        p.textContent = "No products are available in this category right now.";
+        p.textContent = "No products are currently available in " + category + ".";
     } else {
-        p.textContent = "No products are available at the moment. Check back soon.";
+        p.textContent = "No products are available in the marketplace at the moment. Please check back soon.";
     }
 
     div.appendChild(icon);
     div.appendChild(h3);
     div.appendChild(p);
+
+    // Provide a convenient "Clear Filters" button if search or category is active
+    if (search || category) {
+        var clearBtn = document.createElement("button");
+        clearBtn.type = "button";
+        clearBtn.className = "secondary-button";
+        clearBtn.style.marginTop = "14px";
+        clearBtn.textContent = "Clear All Filters";
+        clearBtn.setAttribute("aria-label", "Clear search query and category filters");
+        clearBtn.addEventListener("click", function () {
+            if (searchInput) searchInput.value = "";
+            if (categorySelect) categorySelect.value = "";
+            loadProducts();
+        });
+        div.appendChild(clearBtn);
+    }
 
     productGrid.innerHTML = "";
     productGrid.appendChild(div);
@@ -257,6 +274,7 @@ function buildProductCard(product) {
             e.preventDefault();
             addBtn.disabled = true;
             addBtn.textContent = "Adding…";
+            addBtn.setAttribute("aria-busy", "true");
 
             fetch("/api/cart/items", {
                 method: "POST",
@@ -266,6 +284,9 @@ function buildProductCard(product) {
             })
             .then(function (res) {
                 if (res.status === 401) {
+                    addBtn.disabled = false;
+                    addBtn.textContent = "+ Cart";
+                    addBtn.removeAttribute("aria-busy");
                     if (confirm("Please log in to add items to your cart.\n\nGo to login page now?")) {
                         window.location.href = "login.html";
                     }
@@ -279,6 +300,7 @@ function buildProductCard(product) {
                 });
             })
             .then(function (data) {
+                addBtn.removeAttribute("aria-busy");
                 if (!data) {
                     addBtn.disabled = false;
                     addBtn.textContent = "+ Cart";
@@ -294,7 +316,11 @@ function buildProductCard(product) {
                 }, 1500);
             })
             .catch(function (err) {
-                alert(err.message);
+                addBtn.removeAttribute("aria-busy");
+                var friendlyMsg = (typeof window.formatCustomerError === "function")
+                    ? window.formatCustomerError(err)
+                    : (err.message || "Could not add item to cart.");
+                alert(friendlyMsg);
                 addBtn.disabled = false;
                 addBtn.textContent = "+ Cart";
             });
@@ -388,11 +414,10 @@ function loadProducts() {
         })
         .catch(function (err) {
             console.error("Failed to load products:", err.message);
-            showError(
-                err.message.includes("Failed to fetch")
-                    ? "Could not reach the server. Make sure the server is running."
-                    : err.message
-            );
+            var friendlyMsg = (typeof window.formatCustomerError === "function")
+                ? window.formatCustomerError(err)
+                : (err.message || "We could not load products. Please try again.");
+            showError(friendlyMsg);
         });
 }
 
