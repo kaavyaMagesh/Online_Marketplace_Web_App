@@ -615,7 +615,10 @@ function removeItem(productId, productName, rowEl) {
         loadCart();
     })
     .catch(function (err) {
-        showAlert(err.message, "error");
+        var friendlyMsg = (typeof window.formatCustomerError === "function")
+            ? window.formatCustomerError(err)
+            : (err.message || "Failed to remove item.");
+        showAlert(friendlyMsg, "error");
         loadCart();
     });
 }
@@ -645,7 +648,10 @@ function handleClearCart() {
         loadCart();
     })
     .catch(function (err) {
-        showAlert(err.message, "error");
+        var friendlyMsg = (typeof window.formatCustomerError === "function")
+            ? window.formatCustomerError(err)
+            : (err.message || "Failed to clear cart.");
+        showAlert(friendlyMsg, "error");
         loadCart();
     });
 }

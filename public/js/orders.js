@@ -362,7 +362,10 @@ function handleCancelOrder(orderId, card, badge, cancelBtn) {
     .catch(function (err) {
         cancelBtn.disabled = false;
         cancelBtn.textContent = "Cancel Order";
-        showOrderFeedback(card, err.message, "error");
+        var friendlyMsg = (typeof window.formatCustomerError === "function")
+            ? window.formatCustomerError(err)
+            : (err.message || "Failed to cancel order #" + orderId);
+        showOrderFeedback(card, friendlyMsg, "error");
     });
 }
 

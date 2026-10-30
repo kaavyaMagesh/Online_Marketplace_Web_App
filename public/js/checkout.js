@@ -510,7 +510,10 @@ function renderCheckoutView(user, cartData) {
         })
         .catch(function (err) {
             isSubmitting = false;
-            showFormError(err.message);
+            var friendlyMsg = (typeof window.formatCustomerError === "function")
+                ? window.formatCustomerError(err)
+                : (err.message || "Failed to place order.");
+            showFormError(friendlyMsg);
             submitBtn.disabled = false;
             submitBtn.textContent = "Place Order (" + formatPrice(cartData.total) + ")";
         });

@@ -412,16 +412,28 @@ function renderProfileView(profileData) {
             // Update overview display name
             nameHeading.textContent = nameVal;
 
-            // Update navbar user greeting if visible
-            var navUser = document.querySelector(".nav-user");
-            if (navUser) {
-                navUser.textContent = "Hi, " + nameVal;
+            // Update navbar user greeting if visible, preserving profile icon
+            var navUserName = document.querySelector(".nav-user-name");
+            if (navUserName) {
+                navUserName.textContent = "Hi, " + nameVal;
+            } else {
+                var navUser = document.querySelector(".nav-user");
+                if (navUser) {
+                    navUser.textContent = "Hi, " + nameVal;
+                }
+            }
+            var navLink = document.getElementById("nav-profile-link");
+            if (navLink) {
+                navLink.setAttribute("aria-label", "My Profile — Hi, " + nameVal);
             }
         })
         .catch(function (err) {
             saveBtn.disabled = false;
             saveBtn.textContent = "Save Changes";
-            showAlert(detailsAlert, err.message, "error");
+            var friendlyMsg = (typeof window.formatCustomerError === "function")
+                ? window.formatCustomerError(err)
+                : (err.message || "Failed to update profile.");
+            showAlert(detailsAlert, friendlyMsg, "error");
         });
     });
 
@@ -486,7 +498,10 @@ function renderProfileView(profileData) {
         .catch(function (err) {
             pwdBtn.disabled = false;
             pwdBtn.textContent = "Update Password";
-            showAlert(pwdAlert, err.message, "error");
+            var friendlyMsg = (typeof window.formatCustomerError === "function")
+                ? window.formatCustomerError(err)
+                : (err.message || "Failed to update password.");
+            showAlert(pwdAlert, friendlyMsg, "error");
         });
     });
 }

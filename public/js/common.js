@@ -5,7 +5,7 @@
  * whether the current visitor is signed in, then shows the correct nav links.
  *
  * Signed-out nav:  Home | Products | Cart | Login | Sign Up
- * Signed-in nav:   Home | Products | Cart (N) | Hi, <Name> | Logout
+ * Signed-in nav:   Home | Products | Cart (N) | [Icon] Hi, <Name> | Logout
  */
 
 var header = document.getElementById("site-header");
@@ -31,13 +31,20 @@ function renderNav(user) {
     var rightLinks;
 
     if (user) {
-        // Signed-in: show Orders, Cart with counter, Profile link, and logout button.
+        // Signed-in: show Orders, Cart with counter, Profile link with discoverable icon, and logout button.
+        var displayName = (user && user.name && user.name.trim()) ? user.name.trim() : "Account";
         rightLinks =
             '<a href="orders.html" class="nav-orders-link" id="nav-orders-link">Orders</a>' +
             '<a href="cart.html" class="nav-cart-link" id="nav-cart-link" aria-label="Shopping Cart">' +
             '  🛒 Cart <span class="cart-badge" id="nav-cart-badge">0</span>' +
             '</a>' +
-            '<a href="profile.html" class="nav-user" id="nav-profile-link" title="My Profile">Hi, ' + escapeHtml(user.name) + '</a>' +
+            '<a href="profile.html" class="nav-user nav-profile-link" id="nav-profile-link" title="My Profile" aria-label="My Profile — Hi, ' + escapeHtml(displayName) + '">' +
+            '  <svg class="nav-profile-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+            '    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>' +
+            '    <circle cx="12" cy="7" r="4"></circle>' +
+            '  </svg>' +
+            '  <span class="nav-user-name">Hi, ' + escapeHtml(displayName) + '</span>' +
+            '</a>' +
             '<button class="nav-button" id="nav-logout-btn">Logout</button>';
     } else {
         // Signed-out: show Cart, Login, and Sign Up links.
@@ -53,7 +60,7 @@ function renderNav(user) {
         '  <div class="nav-links">' +
         '    <a href="index.html">Home</a>' +
         '    <a href="products.html">Products</a>' +
-             rightLinks +
+        '    ' + rightLinks +
         '  </div>' +
         '</nav>';
 

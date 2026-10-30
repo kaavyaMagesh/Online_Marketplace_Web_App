@@ -1532,17 +1532,44 @@ a {
    Day 7 — Customer Profile & Order Cancellation Styling
    ========================================================================== */
 
-/* ── Navbar User Link ───────────────────────────────────────────────────── */
-a.nav-user {
+/* ── Navbar User / Profile Discoverability ─────────────────────────────── */
+a.nav-user,
+.nav-profile-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     color: #3156a3;
     font-weight: 600;
     cursor: pointer;
-    transition: color 0.15s, text-decoration 0.15s;
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
-a.nav-user:hover {
-    text-decoration: underline;
+a.nav-user:hover,
+.nav-profile-link:hover {
+    background: #edf2f9;
     color: #1e3a8a;
+    border-color: #dbe4f3;
+    text-decoration: none;
+}
+
+.nav-profile-icon {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+    stroke: currentColor;
+}
+
+.nav-user-name {
+    display: inline-block;
+    white-space: nowrap;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
 }
 
 /* ── Order Cancellation Button & Inline Card Alert ──────────────────────── */
@@ -1899,6 +1926,10 @@ textarea:focus-visible {
 
     .navbar .brand {
         font-size: 20px;
+    }
+
+    .nav-user-name {
+        max-width: 110px;
     }
 
     .nav-links {
