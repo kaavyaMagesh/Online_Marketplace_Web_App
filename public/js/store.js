@@ -630,8 +630,28 @@
     });
   }
 
+  async function checkAuth() {
+    try {
+      const res = await fetch('/api/auth/me');
+      const data = await res.json();
+      const authLabel = document.getElementById('navAuthLabel');
+      const authLink = document.getElementById('navLoginLink');
+      if (data.user && authLabel) {
+        authLabel.textContent = data.user.name ? data.user.name.split(' ')[0] : 'Account';
+        if (authLink) {
+          if (data.user.role === 'seller') authLink.href = '/seller/dashboard.html';
+          else if (data.user.role === 'admin' || data.user.role === 'super_admin') authLink.href = '/api/superadmin/settings';
+          else authLink.href = '/#';
+        }
+      }
+    } catch (e) {
+      // Ignore if offline
+    }
+  }
+
   // Initial Load
   function init() {
+    checkAuth();
     updateCartUI();
     loadCategories();
     loadProducts();

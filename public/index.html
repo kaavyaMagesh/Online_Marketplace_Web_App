@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoodsPlatz | Online Marketplace</title>
+  <meta name="description" content="Shop electronics, clothing, books, and home essentials with verified quality and fast delivery.">
+  <link rel="stylesheet" href="css/store.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+<body>
+
+  <!-- Site Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <!-- Brand Logo -->
+      <a href="/" class="brand-link" id="homeBrandLink">
+        <div class="brand-icon">G</div>
+        <div>
+          <span class="brand-text">GoodsPlatz</span>
+          <span class="brand-tag">Store</span>
+        </div>
+      </a>
+
+      <!-- Search Bar -->
+      <div class="header-search">
+        <div class="search-input-wrapper">
+          <span class="search-input-icon">🔍</span>
+          <input 
+            type="text" 
+            id="storeSearchInput" 
+            class="header-search-input" 
+            placeholder="Search products by name..." 
+            autocomplete="off"
+            aria-label="Search products"
+          >
+          <button type="button" class="btn-clear-search" id="btnClearSearch" title="Clear search">&times;</button>
+        </div>
+      </div>
+
+      <!-- Header Actions -->
+      <nav class="header-actions" aria-label="Main Navigation">
+        <a href="/login.html" class="btn-header-link" id="navLoginLink">
+          <span>👤</span>
+          <span id="navAuthLabel">Sign In</span>
+        </a>
+
+        <a href="/seller/dashboard.html" class="btn-header-link" id="navSellerLink">
+          <span>🏪</span>
+          <span>Seller Central</span>
+        </a>
+
+        <button type="button" class="btn-cart" id="btnOpenCart" aria-label="Open Shopping Cart">
+          <span>🛒</span>
+          <span>Cart</span>
+          <span class="cart-count-badge" id="cartBadge">0</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-wrapper">
+
+    <!-- Minimalist Clean Hero Banner -->
+    <section class="simple-hero" aria-label="Promotional Information">
+      <div class="hero-left">
+        <h1>Simple, Quality Shopping</h1>
+        <p>Curated everyday essentials directly from verified sellers across India.</p>
+      </div>
+      <div class="hero-features">
+        <div class="hero-feature-item">
+          <span class="hero-feature-icon">🚚</span>
+          <span>Free shipping over ₹499</span>
+        </div>
+        <div class="hero-feature-item">
+          <span class="hero-feature-icon">🛡️</span>
+          <span>Verified sellers & stock</span>
+        </div>
+        <div class="hero-feature-item">
+          <span class="hero-feature-icon">🔄</span>
+          <span>7-day easy returns</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Controls Bar: Category Filter Pills & Sort -->
+    <section class="controls-bar" aria-label="Filters and Sorting">
+      <div class="category-pills" id="categoryPillsContainer">
+        <button type="button" class="category-pill active" data-category="all">All Products</button>
+        <!-- Category buttons dynamically loaded from /api/categories -->
+      </div>
+
+      <div class="sort-and-meta">
+        <span class="results-count" id="resultsCountLabel">Loading products...</span>
+        <select id="sortSelect" class="sort-select" aria-label="Sort products by">
+          <option value="featured">Sort: Featured</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="name-asc">Name: A to Z</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Products Grid -->
+    <section class="products-grid" id="productsGrid" aria-label="Product Catalog">
+      <!-- Product cards dynamically rendered by JavaScript -->
+    </section>
+
+  </main>
+
+  <!-- Slide-out Shopping Cart Drawer -->
+  <div class="drawer-overlay" id="cartOverlay"></div>
+  <aside class="cart-drawer" id="cartDrawer" aria-label="Shopping Cart">
+    <div class="cart-drawer-header">
+      <div class="cart-drawer-title">
+        <span>🛒</span>
+        <span>Your Shopping Cart</span>
+      </div>
+      <button type="button" class="btn-close-drawer" id="btnCloseCart" aria-label="Close cart">&times;</button>
+    </div>
+
+    <!-- Cart Items List -->
+    <div class="cart-items-list" id="cartItemsList">
+      <div class="cart-empty-message" id="cartEmptyMessage">
+        <div class="cart-empty-icon">🛍️</div>
+        <p>Your cart is empty.</p>
+        <p style="font-size: 0.8rem; margin-top: 0.25rem;">Browse products to add items.</p>
+      </div>
+    </div>
+
+    <!-- Cart Footer & Checkout Button -->
+    <div class="cart-drawer-footer" id="cartDrawerFooter">
+      <div class="cart-summary-row">
+        <span>Subtotal</span>
+        <span id="cartSubtotal">₹0.00</span>
+      </div>
+      <div class="cart-summary-row">
+        <span>Delivery</span>
+        <span id="cartDelivery">Free</span>
+      </div>
+      <div class="cart-summary-row cart-summary-total">
+        <span>Total</span>
+        <span id="cartTotal">₹0.00</span>
+      </div>
+
+      <button type="button" class="btn-checkout" id="btnOpenCheckout" disabled>
+        Proceed to Checkout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Product Detail Modal (Quick View) -->
+  <div class="modal-overlay" id="productModal" role="dialog" aria-modal="true" aria-labelledby="modalProductTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalProductTitle">Product Details</h2>
+        <button type="button" class="btn-close-modal" id="btnCloseProductModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-product-layout">
+          <img id="modalProductImg" src="" alt="Product image" class="modal-product-img">
+          <div class="modal-product-info">
+            <div class="product-category-tag" id="modalProductCategory">Category</div>
+            <div class="modal-product-price" id="modalProductPrice">₹0.00</div>
+            <div id="modalProductStockBadge" style="margin-bottom: 0.75rem;"></div>
+            <div class="modal-product-desc" id="modalProductDesc"></div>
+
+            <div style="display: flex; align-items: center; gap: 1rem; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border-light);">
+              <div class="qty-stepper">
+                <button type="button" class="qty-btn" id="modalQtyMinus">-</button>
+                <span class="qty-count" id="modalQtyValue">1</span>
+                <button type="button" class="qty-btn" id="modalQtyPlus">+</button>
+              </div>
+              <button type="button" class="btn-add-cart" id="modalBtnAddToCart" style="flex: 1; justify-content: center; padding: 0.75rem;">
+                <span>🛒</span> Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkout Confirmation Modal -->
+  <div class="modal-overlay" id="checkoutModal" role="dialog" aria-modal="true" aria-labelledby="checkoutModalTitle">
+    <div class="modal-dialog" style="max-width: 480px;">
+      <div class="modal-header">
+        <h2 class="modal-title" id="checkoutModalTitle">Complete Order</h2>
+        <button type="button" class="btn-close-modal" id="btnCloseCheckoutModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="checkoutForm">
+          <div style="margin-bottom: 1rem;">
+            <label for="custName" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Full Name *</label>
+            <input type="text" id="custName" required placeholder="e.g. Rahul Sharma" style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-family: var(--font-body); font-size: 0.9rem;" value="Customer Demo">
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label for="custPhone" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Phone Number *</label>
+            <input type="tel" id="custPhone" required placeholder="9876543210" style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-family: var(--font-body); font-size: 0.9rem;" value="9876543210">
+          </div>
+          <div style="margin-bottom: 1.25rem;">
+            <label for="custAddress" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Delivery Address *</label>
+            <textarea id="custAddress" rows="2" required placeholder="Flat 4B, Sunrise Towers, MG Road, Bengaluru" style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-family: var(--font-body); font-size: 0.9rem;">Flat 4B, MG Road, Bengaluru</textarea>
+          </div>
+
+          <div style="background: var(--bg-page); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 0.85rem; margin-bottom: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600;">
+              <span>Payable Amount:</span>
+              <span id="checkoutPayableTotal">₹0.00</span>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Payment Mode: Cash on Delivery / UPI on Delivery</div>
+          </div>
+
+          <button type="submit" class="btn-checkout" id="btnPlaceOrder">
+            Confirm & Place Order
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Success Modal -->
+  <div class="modal-overlay" id="orderSuccessModal" role="dialog" aria-modal="true" aria-labelledby="orderSuccessTitle">
+    <div class="modal-dialog" style="max-width: 440px; text-align: center;">
+      <div class="modal-body" style="padding: 2.5rem 1.5rem;">
+        <div style="font-size: 3.5rem; margin-bottom: 1rem;">✅</div>
+        <h2 id="orderSuccessTitle" style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Order Placed!</h2>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+          Thank you for shopping with GoodsPlatz. Your order <strong id="confirmedOrderId">#ORD-1001</strong> has been confirmed.
+        </p>
+        <button type="button" class="btn-checkout" id="btnContinueShopping">
+          Continue Shopping
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <strong>GoodsPlatz</strong> &copy; 2026. Clean, simple online marketplace.
+      </div>
+      <div class="footer-links">
+        <a href="/">Storefront</a>
+        <a href="/seller/dashboard.html">Seller Central</a>
+        <a href="/api/health">System Status</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Store Frontend Logic -->
+  <script src="js/store.js"></script>
+</body>
+</html>

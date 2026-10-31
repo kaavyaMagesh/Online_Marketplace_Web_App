@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoodsPlatz | Product Details</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/common.js" defer></script>
+</head>
+<body>
+    <header id="site-header"></header>
+
+    <main class="section">
+        <a href="products.html">← Back to Products</a>
+
+        <h1>Product Details</h1>
+        <p>Detailed product information will appear here.</p>
+        <p>Product ID: <span id="product-id">Not selected</span></p>
+
+        <p>
+            Product descriptions, prices, stock availability and seller information
+            will be loaded from the product API.
+        </p>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const productId = params.get("id");
+
+        document.getElementById("product-id").textContent =
+            productId || "Not selected";
+    </script>
+</body>
+</html>

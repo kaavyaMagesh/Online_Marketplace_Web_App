@@ -1,0 +1,37 @@
+.form-container h1 {
+    text-align: center;
+}
+
+.form-container > p {
+    color: #666;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.form-container .form-message {
+    min-height: 20px;   /* keeps layout stable when message appears/disappears */
+    margin-top: 10px;
+    font-size: 14px;
+    color: #b42318;     /* default error colour; overridden by JS for success */
+    line-height: 1.4;
+}
+
+/* Disable styling: makes it visually obvious that the button is busy */
+.form-container button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* Placeholder colour */
+.form-container input::placeholder {
+    color: #aaa;
+    font-size: 14px;
+}
+
+
+/* Signed-in user display name shown in the navigation bar */
+.nav-user {
+    color: #3156a3;
+    font-weight: bold;
+    font-size: 14px;
+}

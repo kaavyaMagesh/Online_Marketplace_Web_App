@@ -1,0 +1,159 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: #252525;
+    background: #f7f8fc;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 18px 7%;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.brand {
+    font-size: 23px;
+    font-weight: bold;
+    color: #3156a3;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.nav-links a:hover {
+    color: #3156a3;
+}
+
+.nav-links .nav-button:hover { /*to ensure that the text doesnt dissapear against the blue bg */
+    color: white;
+}
+
+.nav-button,
+.primary-button {
+    display: inline-block;
+    padding: 11px 18px;
+    border: 0;
+    border-radius: 6px;
+    background: #3156a3;
+    color: white;
+    cursor: pointer;
+}
+
+.hero {
+    padding: 65px 7%;
+    background: #eaf0ff;
+}
+
+.hero h1 {
+    max-width: 600px;
+    font-size: clamp(30px, 5vw, 48px);
+}
+
+.hero p {
+    line-height: 1.7;
+    max-width: 550px;
+}
+
+.section {
+    padding: 35px 7%;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 22px;
+}
+
+.product-card {
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: white;
+}
+
+.product-image {
+    display: grid;
+    place-items: center;
+    min-height: 160px;
+    background: #edf0f7;
+    font-size: 48px;
+}
+
+.product-info {
+    padding: 16px;
+}
+
+.product-info h3 {
+    margin-top: 0;
+}
+
+.price {
+    font-weight: bold;
+    color: #3156a3;
+}
+
+.footer {
+    margin-top: 35px;
+    padding: 22px;
+    text-align: center;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+}
+
+.form-container {
+    max-width: 430px;
+    margin: 45px auto;
+    padding: 28px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+}
+
+.form-container label {
+    display: block;
+    margin: 15px 0 6px;
+}
+
+.form-container input {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.form-container button {
+    width: 100%;
+    margin-top: 20px;
+}
+
+@media (max-width: 600px) {
+    .navbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .nav-links {
+        gap: 12px;
+    }
+
+    .hero {
+        padding: 40px 7%;
+    }
+}

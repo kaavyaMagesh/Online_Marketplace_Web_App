@@ -72,9 +72,11 @@ router.patch('/sellers/:sellerId/status', requirePermission('manage_sellers'), a
 
         await db.execute('UPDATE users SET status = ? WHERE user_id = ?', [targetStatus, sellerId]);
 
-        // If blocked, optionally set seller's products to inactive
+        // If blocked, set seller's products to inactive; if unblocked, restore to active
         if (targetStatus === 'blocked') {
             await db.execute("UPDATE products SET status = 'inactive' WHERE seller_id = ?", [sellerId]);
+        } else if (targetStatus === 'active') {
+            await db.execute("UPDATE products SET status = 'active' WHERE seller_id = ?", [sellerId]);
         }
 
         const actionName = targetStatus === 'blocked' ? 'SELLER_BLOCKED' : (targetStatus === 'active' ? 'SELLER_UNBLOCKED' : 'SELLER_STATUS_CHANGED');
