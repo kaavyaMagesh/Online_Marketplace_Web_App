@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoodsPlatz | Checkout</title>
+    <meta name="description" content="Complete your purchase with shipping details on GoodsPlatz.">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/common.js" defer></script>
+    <script src="js/checkout.js" defer></script>
+</head>
+<body>
+    <header id="site-header"></header>
+
+    <main class="section">
+        <a href="cart.html" class="back-link">← Back to Cart</a>
+
+        <!-- Main Checkout Content (populated dynamically) -->
+        <div id="checkout-container" aria-live="polite">
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading checkout details…</p>
+            </div>
+        </div>
+    </main>
+
+    <div id="site-footer"></div>
+</body>
+</html>

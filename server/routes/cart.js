@@ -329,4 +329,106 @@ router.delete('/', async (req, res) => {
     }
 });
 
+/**
+ * Compatibility aliases for customer frontend (/api/cart/items...)
+ */
+router.post('/items', async (req, res) => {
+    // Forward to POST /
+    const customerId = getCustomerId(req);
+    const { product_id, quantity } = req.body;
+    const productId = Number(product_id);
+    const reqQuantity = quantity !== undefined ? Number(quantity) : 1;
+
+    if (!Number.isInteger(productId) || productId <= 0) {
+        return res.status(400).json({ error: 'Product ID must be a valid positive integer.' });
+    }
+    if (!Number.isInteger(reqQuantity) || reqQuantity <= 0) {
+        return res.status(400).json({ error: 'Requested quantity must be a positive integer.' });
+    }
+
+    const [products] = await db.execute(
+        `SELECT product_id, product_name, price, stock_quantity, status FROM products WHERE product_id = ?`,
+        [productId]
+    );
+
+    if (products.length === 0 || products[0].status !== 'active') {
+        return res.status(404).json({ error: 'Product not found or unavailable.' });
+    }
+
+    const product = products[0];
+    const serverPrice = parseFloat(product.price);
+    const cartId = await getOrCreateCart(customerId);
+
+    const [existingItems] = await db.execute(
+        'SELECT cart_item_id, quantity FROM cart_items WHERE cart_id = ? AND product_id = ?',
+        [cartId, productId]
+    );
+
+    const currentCartQty = existingItems.length > 0 ? existingItems[0].quantity : 0;
+    const totalRequestedQty = currentCartQty + reqQuantity;
+
+    if (totalRequestedQty > product.stock_quantity) {
+        return res.status(400).json({
+            error: 'Requested quantity exceeds available stock.',
+            available_stock: product.stock_quantity,
+            in_cart: currentCartQty
+        });
+    }
+
+    if (existingItems.length > 0) {
+        await db.execute(
+            'UPDATE cart_items SET quantity = ?, price = ? WHERE cart_item_id = ?',
+            [totalRequestedQty, serverPrice, existingItems[0].cart_item_id]
+        );
+    } else {
+        await db.execute(
+            'INSERT INTO cart_items (cart_id, product_id, quantity, price) VALUES (?, ?, ?, ?)',
+            [cartId, productId, reqQuantity, serverPrice]
+        );
+    }
+
+    res.status(201).json({
+        message: 'Product added to cart successfully.',
+        product_id: productId,
+        quantity: totalRequestedQty
+    });
+});
+
+router.patch('/items/:productId', async (req, res) => {
+    const customerId = getCustomerId(req);
+    const productId = Number(req.params.productId);
+    const { quantity } = req.body;
+    const newQty = Number(quantity);
+
+    if (!Number.isInteger(productId) || productId <= 0 || !Number.isInteger(newQty) || newQty <= 0) {
+        return res.status(400).json({ error: 'Invalid product ID or quantity.' });
+    }
+
+    const cartId = await getOrCreateCart(customerId);
+    const [existing] = await db.execute(
+        'SELECT ci.cart_item_id, p.stock_quantity, p.status FROM cart_items ci JOIN products p ON ci.product_id = p.product_id WHERE ci.cart_id = ? AND ci.product_id = ?',
+        [cartId, productId]
+    );
+
+    if (existing.length === 0) {
+        return res.status(404).json({ error: 'Product not in cart.' });
+    }
+
+    if (newQty > existing[0].stock_quantity) {
+        return res.status(400).json({ error: 'Quantity exceeds available stock.' });
+    }
+
+    await db.execute('UPDATE cart_items SET quantity = ? WHERE cart_item_id = ?', [newQty, existing[0].cart_item_id]);
+    res.json({ message: 'Cart updated successfully.', quantity: newQty });
+});
+
+router.delete('/items/:productId', async (req, res) => {
+    const customerId = getCustomerId(req);
+    const productId = Number(req.params.productId);
+    const cartId = await getOrCreateCart(customerId);
+
+    await db.execute('DELETE FROM cart_items WHERE cart_id = ? AND product_id = ?', [cartId, productId]);
+    res.json({ message: 'Product removed from cart successfully.' });
+});
+
 module.exports = router;

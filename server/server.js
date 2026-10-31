@@ -18,7 +18,9 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: false, // Set to true if using HTTPS
+        secure: false,   // Set to true if using HTTPS
+        httpOnly: true,  // Prevents JavaScript from reading the cookie
+        sameSite: 'lax', // Protects against CSRF in most cases
         maxAge: 1000 * 60 * 60 * 24 // 24 hours
     }
 }));
@@ -57,13 +59,14 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
-const bcrypt = require('bcryptjs');
-
-// Categories endpoint
+// GET /api/categories — list active categories for the filter dropdown
 app.get('/api/categories', async (req, res) => {
     try {
         const [categories] = await pool.query(
-            "SELECT category_id, category_name, description FROM categories WHERE status = 'active' ORDER BY category_name ASC"
+            `SELECT category_id, category_name, description
+             FROM categories
+             WHERE status = 'active'
+             ORDER BY category_name ASC`
         );
         res.json(categories);
     } catch (error) {
@@ -72,55 +75,7 @@ app.get('/api/categories', async (req, res) => {
     }
 });
 
-// Authentication helper endpoints for session management
-app.get('/api/auth/me', (req, res) => {
-    if (req.session && req.session.user) {
-        return res.json({ authenticated: true, user: req.session.user });
-    }
-    res.json({ authenticated: false, user: null });
-});
-
-app.post('/api/auth/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        if (!email || !password) {
-            return res.status(400).json({ message: 'Email and password are required.' });
-        }
-        const [users] = await pool.query(
-            'SELECT user_id, name, email, password, role, status FROM users WHERE email = ?',
-            [email.trim()]
-        );
-        if (users.length === 0) {
-            return res.status(401).json({ message: 'Invalid credentials.' });
-        }
-        const user = users[0];
-        const match = await bcrypt.compare(password, user.password);
-        if (!match) {
-            return res.status(401).json({ message: 'Invalid credentials.' });
-        }
-        req.session.user = {
-            user_id: user.user_id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            status: user.status
-        };
-        res.json({ message: 'Login successful.', user: req.session.user });
-    } catch (err) {
-        console.error('Login error:', err);
-        res.status(500).json({ message: 'Login failed.' });
-    }
-});
-
-app.post('/api/auth/logout', (req, res) => {
-    req.session.destroy(err => {
-        if (err) return res.status(500).json({ message: 'Could not log out.' });
-        res.clearCookie('connect.sid');
-        res.json({ message: 'Logged out successfully.' });
-    });
-});
-
-// Authentication routes
+// Authentication routes (register, login, me, logout, profile, password)
 app.use('/api/auth', require('../routes/authRoutes'));
 
 // Seller Product routes
@@ -134,15 +89,15 @@ app.use('/api/seller/reports', require('./routes/sellerReports'));
 // Seller general routes
 app.use('/api/seller', require('../routes/sellerRoutes'));
 
-// Product routes
+// Product catalogue routes
 const productRoutes = require('./routes/products');
 app.use('/api/products', productRoutes);
 
-// Shopping cart routes
+// Shopping cart routes (supports both /items syntax and standard cart syntax)
 const cartRoutes = require('./routes/cart');
 app.use('/api/cart', cartRoutes);
 
-// Orders routes
+// Orders routes (supports checkout, order history, cancel)
 const orderRoutes = require('./routes/orders');
 app.use('/api/orders', orderRoutes);
 
@@ -155,7 +110,6 @@ app.get('/seller', (req, res) => {
     res.redirect('/seller/dashboard.html');
 });
 
-
 // Start the server
 if (require.main === module) {
     app.listen(PORT, async () => {
@@ -163,6 +117,5 @@ if (require.main === module) {
         await testConnection();
     });
 }
-
 
 module.exports = app;

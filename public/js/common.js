@@ -4,8 +4,8 @@
  * Rendered on every page. On load it calls GET /api/auth/me to find out
  * whether the current visitor is signed in, then shows the correct nav links.
  *
- * Signed-out nav:  Home | Products | Login | Sign Up
- * Signed-in nav:   Home | Products | Hi, <Name> | Logout
+ * Signed-out nav:  Home | Products | Cart | Login | Sign Up
+ * Signed-in nav:   Home | Products | Cart (N) | [Icon] Hi, <Name> | Logout
  */
 
 var header = document.getElementById("site-header");
@@ -31,13 +31,25 @@ function renderNav(user) {
     var rightLinks;
 
     if (user) {
-        // Signed-in: show the user's name and a logout button.
+        // Signed-in: show Orders, Cart with counter, Profile link with discoverable icon, and logout button.
+        var displayName = (user && user.name && user.name.trim()) ? user.name.trim() : "Account";
         rightLinks =
-            '<span class="nav-user">Hi, ' + escapeHtml(user.name) + '</span>' +
+            '<a href="orders.html" class="nav-orders-link" id="nav-orders-link">Orders</a>' +
+            '<a href="cart.html" class="nav-cart-link" id="nav-cart-link" aria-label="Shopping Cart">' +
+            '  🛒 Cart <span class="cart-badge" id="nav-cart-badge">0</span>' +
+            '</a>' +
+            '<a href="profile.html" class="nav-user nav-profile-link" id="nav-profile-link" title="My Profile" aria-label="My Profile — Hi, ' + escapeHtml(displayName) + '">' +
+            '  <svg class="nav-profile-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+            '    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>' +
+            '    <circle cx="12" cy="7" r="4"></circle>' +
+            '  </svg>' +
+            '  <span class="nav-user-name">Hi, ' + escapeHtml(displayName) + '</span>' +
+            '</a>' +
             '<button class="nav-button" id="nav-logout-btn">Logout</button>';
     } else {
-        // Signed-out: show Login and Sign Up links.
+        // Signed-out: show Cart, Login, and Sign Up links.
         rightLinks =
+            '<a href="cart.html" class="nav-cart-link" id="nav-cart-link" aria-label="Shopping Cart">🛒 Cart</a>' +
             '<a href="login.html">Login</a>' +
             '<a href="register.html" class="nav-button">Sign Up</a>';
     }
@@ -48,7 +60,7 @@ function renderNav(user) {
         '  <div class="nav-links">' +
         '    <a href="index.html">Home</a>' +
         '    <a href="products.html">Products</a>' +
-             rightLinks +
+        '    ' + rightLinks +
         '  </div>' +
         '</nav>';
 
@@ -56,6 +68,11 @@ function renderNav(user) {
     var logoutBtn = document.getElementById("nav-logout-btn");
     if (logoutBtn) {
         logoutBtn.addEventListener("click", handleLogout);
+    }
+
+    // Refresh cart badge if logged in
+    if (user) {
+        updateCartBadge();
     }
 }
 
@@ -72,6 +89,63 @@ function escapeHtml(str) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
 }
+
+/**
+ * Update the shopping cart badge count in the navigation.
+ * Can be called after any cart addition/modification across pages.
+ */
+function updateCartBadge() {
+    var badge = document.getElementById("nav-cart-badge");
+    if (!badge) return;
+
+    fetch("/api/cart", {
+        method: "GET",
+        credentials: "same-origin"
+    })
+    .then(function (response) {
+        if (response.ok) {
+            return response.json();
+        }
+        return null;
+    })
+    .then(function (data) {
+        if (!data || !badge) return;
+        var total = Number(data.total_items) || 0;
+        badge.textContent = total;
+        badge.style.display = total > 0 ? "inline-block" : "inline-block";
+    })
+    .catch(function () {
+        // Silently ignore if unauthenticated or network failure
+    });
+}
+
+// Expose globally for other page scripts
+window.updateCartBadge = updateCartBadge;
+
+/**
+ * Format raw technical errors into helpful customer-facing messages.
+ * Preserves specific backend validation messages if present.
+ * @param {Error|string|object} err
+ * @returns {string}
+ */
+function formatCustomerError(err) {
+    if (!err) return "An unexpected error occurred. Please try again.";
+    var msg = (typeof err === "string") ? err : (err.message || "");
+    if (!msg) return "An unexpected error occurred. Please try again.";
+
+    // Detect common network/fetch failures
+    if (msg.includes("Failed to fetch") || msg.includes("NetworkError") || msg.includes("Network request failed")) {
+        return "Unable to connect to GoodsPlatz. Please check your internet connection and try again.";
+    }
+
+    // Detect HTTP status messages without details
+    if (/^Server returned (5\d\d)/.test(msg) || msg.includes("Internal Server Error")) {
+        return "Our servers are temporarily busy. Please wait a moment and try again.";
+    }
+
+    return msg;
+}
+window.formatCustomerError = formatCustomerError;
 
 /**
  * Call GET /api/auth/me, render the nav, and return the user (or null).
@@ -98,7 +172,7 @@ function loadNav() {
 }
 
 /**
- * Handle the Logout button click in the nav.
+ * Logout button click
  */
 function handleLogout() {
     fetch("/api/auth/logout", {
@@ -106,11 +180,9 @@ function handleLogout() {
         credentials: "same-origin"
     })
     .then(function () {
-        // Redirect to home regardless of the response status.
         window.location.href = "index.html";
     })
     .catch(function () {
-        // Even on network failure, redirect — the session will expire.
         window.location.href = "index.html";
     });
 }

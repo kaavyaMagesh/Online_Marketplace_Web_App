@@ -4,47 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GoodsPlatz | Products</title>
+    <meta name="description" content="Browse all products available on GoodsPlatz. Search by name and filter by category to find exactly what you need.">
     <link rel="stylesheet" href="css/style.css">
     <script src="js/common.js" defer></script>
+    <script src="js/products.js" defer></script>
 </head>
 <body>
     <header id="site-header"></header>
 
     <main class="section">
         <h1>Explore Products</h1>
-        <p>Browse the products available in our marketplace.</p>
+        <p>Browse products available in the GoodsPlatz marketplace.</p>
 
-        <div class="product-grid">
-            <article class="product-card">
-                <div class="product-image">🎧</div>
-                <div class="product-info">
-                    <h3>Wireless Headphones</h3>
-                    <p>Comfortable headphones for everyday use.</p>
-                    <p class="price">&#8377;1,499</p>
-                    <a href="product-details.html?id=1">View Details</a>
-                </div>
-            </article>
+        <!-- Search and category filter toolbar -->
+        <div class="search-filter-bar" role="search">
+            <div class="search-group">
+                <input
+                    type="search"
+                    id="search-input"
+                    placeholder="Search products…"
+                    aria-label="Search products by name"
+                    autocomplete="off"
+                >
+                <button class="search-btn" id="search-btn" aria-label="Submit search">🔍</button>
+            </div>
 
-            <article class="product-card">
-                <div class="product-image">⌚</div>
-                <div class="product-info">
-                    <h3>Smart Watch</h3>
-                    <p>A smart accessory for daily activities.</p>
-                    <p class="price">&#8377;2,499</p>
-                    <a href="product-details.html?id=2">View Details</a>
-                </div>
-            </article>
-
-            <article class="product-card">
-                <div class="product-image">🎒</div>
-                <div class="product-info">
-                    <h3>Travel Backpack</h3>
-                    <p>A practical bag for travel and college.</p>
-                    <p class="price">&#8377;999</p>
-                    <a href="product-details.html?id=3">View Details</a>
-                </div>
-            </article>
+            <select class="category-select" id="category-select" aria-label="Filter by category">
+                <option value="">All Categories</option>
+            </select>
         </div>
+
+        <!-- Result count -->
+        <p class="results-count" id="results-count" aria-live="polite"></p>
+
+        <!-- Product grid — populated by products.js -->
+        <div class="product-grid" id="product-grid" aria-label="Product listing"></div>
     </main>
 
     <div id="site-footer"></div>

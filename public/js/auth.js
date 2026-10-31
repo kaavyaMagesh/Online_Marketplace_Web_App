@@ -70,16 +70,27 @@ function isValidMobile(mobile) {
  */
 function setButtonState(button, disabled, loadingText, normalText) {
     button.disabled = disabled;
+    button.setAttribute("aria-busy", disabled ? "true" : "false");
     button.textContent = disabled ? loadingText : normalText;
 }
 
 /* ─── Registration form ───────────────────────────────────────── */
 
 var registerForm = document.getElementById("register-form");
+var isRegistering = false;
 
 if (registerForm) {
+    // Clear error messages when user starts editing inputs
+    var regInputs = registerForm.querySelectorAll("input");
+    regInputs.forEach(function (inp) {
+        inp.addEventListener("input", function () {
+            clearMessage(registerForm);
+        });
+    });
+
     registerForm.addEventListener("submit", function (event) {
         event.preventDefault();       // stop native browser submission
+        if (isRegistering) return;
         clearMessage(registerForm);
 
         // Read and trim field values.
@@ -129,6 +140,7 @@ if (registerForm) {
 
         // ── Call the registration API ───────────────────────────────
 
+        isRegistering = true;
         setButtonState(submitBtn, true, "Registering...", "Register");
 
         // The role field is deliberately excluded from the request body.
@@ -154,6 +166,7 @@ if (registerForm) {
             });
         })
         .then(function (result) {
+            isRegistering = false;
             setButtonState(submitBtn, false, "Registering...", "Register");
 
             if (result.status === 201 || result.status === 200) {
@@ -173,12 +186,12 @@ if (registerForm) {
             }
         })
         .catch(function (networkError) {
-            // fetch() itself threw — server is not running or no network.
+            isRegistering = false;
             setButtonState(submitBtn, false, "Registering...", "Register");
-            showMessage(
-                registerForm,
-                "Could not reach the server. Please check your connection and try again."
-            );
+            var friendlyMsg = (typeof window.formatCustomerError === "function")
+                ? window.formatCustomerError(networkError)
+                : "Could not reach the server. Please check your connection and try again.";
+            showMessage(registerForm, friendlyMsg);
             console.error("Registration network error:", networkError);
         });
     });
@@ -187,10 +200,20 @@ if (registerForm) {
 /* ─── Login form ──────────────────────────────────────────────── */
 
 var loginForm = document.getElementById("login-form");
+var isLoggingIn = false;
 
 if (loginForm) {
+    // Clear error messages when user starts editing inputs
+    var loginInputs = loginForm.querySelectorAll("input");
+    loginInputs.forEach(function (inp) {
+        inp.addEventListener("input", function () {
+            clearMessage(loginForm);
+        });
+    });
+
     loginForm.addEventListener("submit", function (event) {
         event.preventDefault();
+        if (isLoggingIn) return;
         clearMessage(loginForm);
 
         var email    = document.getElementById("email").value.trim();
@@ -212,6 +235,7 @@ if (loginForm) {
 
         // ── Call the login API ──────────────────────────────────────
 
+        isLoggingIn = true;
         setButtonState(submitBtn, true, "Logging in...", "Login");
 
         var requestBody = {
@@ -231,6 +255,7 @@ if (loginForm) {
             });
         })
         .then(function (result) {
+            isLoggingIn = false;
             setButtonState(submitBtn, false, "Logging in...", "Login");
 
             if (result.status === 200) {
@@ -254,11 +279,12 @@ if (loginForm) {
             }
         })
         .catch(function (networkError) {
+            isLoggingIn = false;
             setButtonState(submitBtn, false, "Logging in...", "Login");
-            showMessage(
-                loginForm,
-                "Could not reach the server. Please check your connection and try again."
-            );
+            var friendlyMsg = (typeof window.formatCustomerError === "function")
+                ? window.formatCustomerError(networkError)
+                : "Could not reach the server. Please check your connection and try again.";
+            showMessage(loginForm, friendlyMsg);
             console.error("Login network error:", networkError);
         });
     });

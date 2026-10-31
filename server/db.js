@@ -34,5 +34,3 @@ module.exports = {
     execute: (...args) => pool.execute(...args),
     getConnection: (...args) => pool.getConnection(...args)
 };
-
-

@@ -400,4 +400,106 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+/**
+ * PATCH /api/orders/:id/cancel & POST /api/orders/:id/cancel
+ * Order cancellation: validates status and restocks inventory.
+ */
+async function handleOrderCancellation(req, res) {
+    let conn;
+    try {
+        const orderId = Number(req.params.id);
+        const userId = getCustomerId(req);
+
+        if (!Number.isInteger(orderId) || orderId <= 0) {
+            return res.status(400).json({ error: "Invalid order ID." });
+        }
+
+        conn = await pool.getConnection();
+        await conn.beginTransaction();
+
+        const [orders] = await conn.execute(
+            `SELECT order_id, customer_id, status
+             FROM orders
+             WHERE order_id = ?
+             FOR UPDATE`,
+            [orderId]
+        );
+
+        if (orders.length === 0) {
+            await conn.rollback();
+            conn.release();
+            return res.status(404).json({ error: "Order not found." });
+        }
+
+        const order = orders[0];
+        const currentUser = req.session && req.session.user;
+        const isStaff = currentUser && (currentUser.role === 'admin' || currentUser.role === 'super_admin');
+        if (!isStaff && order.customer_id !== userId) {
+            await conn.rollback();
+            conn.release();
+            return res.status(403).json({ error: "You are not authorized to cancel this order." });
+        }
+
+        if (order.status === "cancelled") {
+            await conn.rollback();
+            conn.release();
+            return res.status(400).json({ error: "This order has already been cancelled." });
+        }
+
+        if (order.status === "delivered") {
+            await conn.rollback();
+            conn.release();
+            return res.status(400).json({ error: "This order cannot be cancelled as it has already been delivered." });
+        }
+
+        if (!["pending", "confirmed"].includes(order.status)) {
+            await conn.rollback();
+            conn.release();
+            return res.status(400).json({ error: `Order cannot be cancelled in its current state ("${order.status}").` });
+        }
+
+        // Restock inventory
+        const [items] = await conn.execute(
+            `SELECT product_id, quantity FROM order_items WHERE order_id = ?`,
+            [orderId]
+        );
+
+        for (const item of items) {
+            if (item.product_id) {
+                await conn.execute(
+                    `UPDATE products SET stock_quantity = stock_quantity + ? WHERE product_id = ?`,
+                    [item.quantity, item.product_id]
+                );
+            }
+        }
+
+        await conn.execute(
+            `UPDATE orders SET status = 'cancelled' WHERE order_id = ?`,
+            [orderId]
+        );
+
+        await conn.commit();
+        conn.release();
+
+        res.json({
+            message: `Order #${orderId} has been cancelled successfully.`,
+            order: {
+                order_id: orderId,
+                status: "cancelled",
+                previous_status: order.status
+            }
+        });
+    } catch (err) {
+        if (conn) {
+            try { await conn.rollback(); } catch (e) {}
+            conn.release();
+        }
+        console.error("Order cancellation error:", err.message);
+        res.status(500).json({ error: "Failed to cancel order. Please try again later." });
+    }
+}
+
+router.patch("/:id/cancel", handleOrderCancellation);
+router.post("/:id/cancel", handleOrderCancellation);
+
 module.exports = router;
