@@ -127,6 +127,10 @@ app.use('/api/auth', require('../routes/authRoutes'));
 const sellerProductRoutes = require('./routes/sellerProducts');
 app.use('/api/seller/products', sellerProductRoutes);
 
+// Seller Order & Report routes
+app.use('/api/seller/orders', require('./routes/sellerOrders'));
+app.use('/api/seller/reports', require('./routes/sellerReports'));
+
 // Seller general routes
 app.use('/api/seller', require('../routes/sellerRoutes'));
 

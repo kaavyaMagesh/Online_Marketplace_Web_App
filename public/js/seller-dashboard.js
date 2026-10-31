@@ -300,6 +300,22 @@ function getFilteredProducts() {
 }
 
 /**
+ * Low-stock status helper
+ * Defines < 5 units as low stock, 0 as out of stock, else in stock.
+ */
+function getStockStatus(quantity) {
+  if (quantity === 0) {
+    return "Out of stock";
+  }
+
+  if (quantity < 5) {
+    return "Low stock";
+  }
+
+  return "In stock";
+}
+
+/**
  * Render Product Table using strictly textContent for untrusted user strings
  */
 function renderProductsTable() {
@@ -411,15 +427,14 @@ function renderProductsTable() {
 
     const stockTag = document.createElement('span');
     const qty = Number(product.stock_quantity);
-    if (qty === 0) {
+    const stockStatusLabel = getStockStatus(qty);
+    stockTag.textContent = stockStatusLabel;
+    if (stockStatusLabel === 'Out of stock') {
       stockTag.className = 'stock-tag out-of-stock';
-      stockTag.textContent = 'Out of stock';
-    } else if (qty <= 5) {
+    } else if (stockStatusLabel === 'Low stock') {
       stockTag.className = 'stock-tag low-stock';
-      stockTag.textContent = 'Low Stock';
     } else {
       stockTag.className = 'stock-tag in-stock';
-      stockTag.textContent = 'Healthy';
     }
     stockNumberRow.appendChild(stockTag);
     stockWrapper.appendChild(stockNumberRow);
@@ -428,7 +443,8 @@ function renderProductsTable() {
     const barBg = document.createElement('div');
     barBg.className = 'stock-bar-bg';
     const barFill = document.createElement('div');
-    barFill.className = `stock-bar-fill ${qty === 0 ? 'empty' : qty <= 5 ? 'low' : ''}`;
+    barFill.className = `stock-bar-fill ${qty === 0 ? 'empty' : qty < 5 ? 'low' : ''}`;
+
     barFill.style.width = `${Math.min(100, Math.max(5, (qty / 30) * 100))}%`;
     barBg.appendChild(barFill);
     stockWrapper.appendChild(barBg);

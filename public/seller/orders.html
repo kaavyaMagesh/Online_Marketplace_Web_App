@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seller Orders & Sales Reports | GoodsPlatz Marketplace</title>
+  <meta name="description" content="Manage orders containing your products, track fulfillment statuses, and inspect sales revenue performance reports.">
+  <link rel="stylesheet" href="../css/seller-dashboard.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <style>
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .report-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .report-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .report-card-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+    }
+    .report-card-value {
+      font-family: var(--font-heading);
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .report-card-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .status-confirmed { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+    .status-processing { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .status-shipped { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
+    .status-delivered { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .status-cancelled { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+    .status-pending { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+    .action-select {
+      padding: 0.35rem 0.65rem;
+      font-size: 0.8rem;
+      font-family: var(--font-body);
+      border: 1px solid var(--border-glass-strong);
+      border-radius: var(--radius-sm);
+      background: #ffffff;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+    .action-select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .table-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-lg);
+      overflow-x: auto;
+      box-shadow: var(--shadow-sm);
+    }
+    .orders-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.875rem;
+    }
+    .orders-table th {
+      background: #f8fafc;
+      padding: 0.85rem 1rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      border-bottom: 1px solid var(--border-glass);
+      white-space: nowrap;
+    }
+    .orders-table td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-glass);
+      vertical-align: middle;
+    }
+    .orders-table tr:hover td {
+      background: #f8fafc;
+    }
+    .customer-pill {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .customer-name {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    .customer-sub {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 2px solid var(--border-glass);
+      margin-bottom: 1.5rem;
+    }
+    .nav-tab-btn {
+      background: none;
+      border: none;
+      padding: 0.65rem 1.25rem;
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all var(--transition-fast);
+    }
+    .nav-tab-btn:hover {
+      color: var(--text-main);
+    }
+    .nav-tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="app-header">
+    <a href="/seller/dashboard.html" class="brand-wrapper" id="brandLogoLink">
+      <div class="brand-logo-icon">G</div>
+      <div>
+        <div class="brand-title">GoodsPlatz</div>
+      </div>
+      <span class="brand-badge">Seller Central</span>
+    </a>
+
+    <div class="header-user-section">
+      <div class="user-identity-card" id="userCard">
+        <div class="user-avatar" id="userAvatarText">S</div>
+        <div>
+          <div class="user-meta-name" id="userDisplayName">Checking session...</div>
+          <div class="user-meta-role" id="userRoleBadge">Seller Portal</div>
+        </div>
+      </div>
+
+      <a href="/seller/dashboard.html" class="btn-header" style="text-decoration:none;" title="Product Inventory">
+        <span>📦</span>
+        <span>Inventory</span>
+      </a>
+
+      <a href="/seller/orders.html" class="btn-header" style="text-decoration:none; background: var(--bg-base); font-weight:700;" title="Orders & Reports">
+        <span>📋</span>
+        <span>Orders & Reports</span>
+      </a>
+
+      <a href="/" class="btn-header" style="text-decoration:none;" title="View Public Store">
+        <span>🛍️</span>
+        <span>Storefront</span>
+      </a>
+
+      <button type="button" class="btn-header" id="btnLogout" title="Logout of current session">
+        <span>🚪</span>
+        <span>Logout</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="dashboard-container">
+
+    <!-- Hero / Welcome Banner -->
+    <section class="hero-banner" aria-label="Welcome and Actions">
+      <div>
+        <h1 class="hero-title">Order Management & <span class="highlight">Sales Reports</span></h1>
+        <p class="hero-subtitle">
+          Track customer orders containing your products, update fulfillment stages, and monitor revenue metrics.
+        </p>
+      </div>
+      <div style="display: flex; gap: 0.75rem;">
+        <button type="button" class="btn-primary" id="btnRefreshOrders">
+          <span>🔄</span>
+          <span>Refresh Data</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Sales Summary KPI Cards -->
+    <section class="report-grid" id="salesReportCards" aria-label="Sales Metrics">
+      <div class="report-card">
+        <span class="report-card-label">Completed Sales</span>
+        <span class="report-card-value" id="kpiCompletedSales">₹0.00</span>
+        <span class="report-card-sub" id="kpiCompletedUnits">0 units delivered</span>
+      </div>
+      <div class="report-card">
+        <span class="report-card-label">Gross Revenue</span>
+        <span class="report-card-value" id="kpiGrossRevenue">₹0.00</span>
+        <span class="report-card-sub" id="kpiTotalUnits">0 units ordered</span>
+      </div>
+      <div class="report-card">
+        <span class="report-card-label">Pending Revenue</span>
+        <span class="report-card-value" id="kpiPendingRevenue">₹0.00</span>
+        <span class="report-card-sub">In confirmed/shipping</span>
+      </div>
+      <div class="report-card">
+        <span class="report-card-label">Total Orders</span>
+        <span class="report-card-value" id="kpiTotalOrders">0</span>
+        <span class="report-card-sub">Orders containing your products</span>
+      </div>
+    </section>
+
+    <!-- Orders Filter and Search Toolbar -->
+    <section class="controls-card" aria-label="Orders Filter Toolbar" style="margin-bottom: 1.5rem;">
+      <div class="search-box-wrapper" style="flex: 1; max-width: 400px;">
+        <input 
+          type="text" 
+          id="ordersSearchInput" 
+          class="search-input" 
+          placeholder="Search by order ID or product name..."
+          aria-label="Search orders"
+        >
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button type="button" class="btn-filter-pill active" data-status="all">All</button>
+        <button type="button" class="btn-filter-pill" data-status="confirmed">Confirmed</button>
+        <button type="button" class="btn-filter-pill" data-status="processing">Processing</button>
+        <button type="button" class="btn-filter-pill" data-status="shipped">Shipped</button>
+        <button type="button" class="btn-filter-pill" data-status="delivered">Delivered</button>
+        <button type="button" class="btn-filter-pill" data-status="cancelled">Cancelled</button>
+      </div>
+    </section>
+
+    <!-- Orders Table Section -->
+    <section class="table-container" aria-label="Seller Orders List">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Order # & Date</th>
+            <th>Product Details</th>
+            <th>Customer & Address</th>
+            <th>Qty</th>
+            <th>Unit Price</th>
+            <th>Subtotal</th>
+            <th>Item Status</th>
+            <th>Update Status</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTableBody">
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 2.5rem; color: var(--text-dim);">
+              Loading orders...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Top Selling Products Section -->
+    <section style="margin-top: 2.5rem;">
+      <h2 style="font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;">
+        Top Performing Products
+      </h2>
+      <div class="table-container">
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Current Price</th>
+              <th>Units Sold</th>
+              <th>Revenue Generated</th>
+              <th>Stock Remaining</th>
+            </tr>
+          </thead>
+          <tbody id="topProductsTableBody">
+            <tr>
+              <td colspan="5" style="text-align: center; padding: 1.5rem; color: var(--text-dim);">
+                Loading performance metrics...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Seller Orders Logic -->
+  <script src="../js/seller-orders.js"></script>
+</body>
+</html>

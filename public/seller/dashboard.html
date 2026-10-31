@@ -30,6 +30,16 @@
         </div>
       </div>
 
+      <a href="/seller/orders.html" class="btn-header" style="text-decoration:none;" title="Orders & Sales Reports">
+        <span>📋</span>
+        <span>Orders & Reports</span>
+      </a>
+
+      <a href="/" class="btn-header" style="text-decoration:none;" title="View Public Store">
+        <span>🛍️</span>
+        <span>Storefront</span>
+      </a>
+
       <button type="button" class="btn-header" id="btnSwitchSeller" title="Switch or test login session">
         <span>🔄</span>
         <span id="switchSessionBtnLabel">Switch Session</span>
@@ -311,13 +321,13 @@
         <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
           Are you sure you want to deactivate <strong id="deactivateProductName" style="color: var(--text-main);">this product</strong>?
         </p>
-        <p style="margin-top: 0.75rem; color: #fca5a5; font-size: 0.85rem; background: var(--rose-bg); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--rose-border);">
+        <p style="margin-top: 0.75rem; color: var(--rose); font-size: 0.85rem; background: var(--rose-bg); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--rose-border);">
           ⚠️ Once deactivated, this product will no longer appear in the public catalog and cannot be purchased by customers.
         </p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn-secondary" id="btnCancelDeactivate">Cancel</button>
-        <button type="button" class="btn-primary" id="btnConfirmDeactivate" style="background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);">
+        <button type="button" class="btn-primary" id="btnConfirmDeactivate" style="background: #dc2626; border-color: #dc2626;">
           Deactivate
         </button>
       </div>
@@ -365,7 +375,7 @@
 
         <div style="position: relative; text-align: center; margin: 1rem 0;">
           <hr style="border: 0; border-top: 1px solid var(--border-glass);">
-          <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #0f172a; padding: 0 0.75rem; font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Or Custom Credentials</span>
+          <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #ffffff; padding: 0 0.75rem; font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Or Custom Credentials</span>
         </div>
 
         <form id="customLoginForm">
