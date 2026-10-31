@@ -42,7 +42,7 @@ GoodsPlatz is designed to simulate a realistic online marketplace with multiple 
 | Team Member | Feature Area & Branch | Core Responsibilities |
 |---|---|---|
 | **Varshni** | `feature/customer-public-pages` | Customer frontend, authentication, browsing/search, product details, cart, checkout, order history & cancellation, profile management |
-| **Kaavyashri** | `feature/backend-seller` | MySQL schema, Express server, seller dashboard, inventory stock controls, fulfillment, transactional order backend |
+| **Kaavyashri** | `feature/backend-seller` | MySQL schema and Database Design, Express server, seller dashboard, inventory stock controls, fulfillment, transactional order backend |
 | **Mahalakshmi** | `feature/admin-superadmin` | Admin & Super Admin interfaces, APIs, category management, seller moderation, permissions, reports, and audit logs |
 
 ---
