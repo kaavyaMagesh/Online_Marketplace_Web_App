@@ -18,6 +18,7 @@ router.get("/", async (req, res) => {
         p.stock_quantity AS stock,
         p.image,
         p.image AS image_url,
+        p.status,
         p.category_id,
         c.category_name
       FROM products p

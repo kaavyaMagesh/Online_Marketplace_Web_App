@@ -135,6 +135,22 @@ function formatCurrency(amount) {
 }
 
 /**
+ * Low-stock status helper
+ * Defines fewer than 5 units as Low stock
+ */
+function getStockStatus(quantity) {
+  if (quantity === 0) {
+    return "Out of stock";
+  }
+
+  if (quantity < 5) {
+    return "Low stock";
+  }
+
+  return "In stock";
+}
+
+/**
  * Check User Session Status
  */
 async function checkAuthSession() {

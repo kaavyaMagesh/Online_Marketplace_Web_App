@@ -1,6 +1,6 @@
 const http = require('http');
-const app = require('./server/server');
-const db = require('./server/db');
+const app = require('../server/server');
+const db = require('../server/db');
 
 const PORT = 5098;
 
