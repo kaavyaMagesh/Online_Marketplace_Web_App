@@ -99,9 +99,97 @@ async function verifyProductOwnership(req, res, next) {
     }
 }
 
+/**
+ * Requires admin role (admin or super_admin).
+ */
+function requireAdmin(req, res, next) {
+    if (!req.session || !req.session.user) {
+        return res.status(401).json({ error: 'Unauthorized: Please log in as an administrator.' });
+    }
+
+    const { role, status } = req.session.user;
+
+    if (role !== 'admin' && role !== 'super_admin') {
+        return res.status(403).json({ error: 'Forbidden: Admin access required.' });
+    }
+
+    if (status !== 'active') {
+        return res.status(403).json({ error: 'Forbidden: Admin account is not active.' });
+    }
+
+    next();
+}
+
+/**
+ * Requires Super Admin role exclusively.
+ */
+function requireSuperAdmin(req, res, next) {
+    if (!req.session || !req.session.user) {
+        return res.status(401).json({ error: 'Unauthorized: Please log in as a Super Admin.' });
+    }
+
+    const { role, status } = req.session.user;
+
+    if (role !== 'super_admin') {
+        return res.status(403).json({ error: 'Forbidden: Super Admin access required. Ordinary administrators cannot perform this operation.' });
+    }
+
+    if (status !== 'active') {
+        return res.status(403).json({ error: 'Forbidden: Super Admin account is not active.' });
+    }
+
+    next();
+}
+
+/**
+ * Verifies that the admin possesses a specific permission.
+ */
+function requirePermission(permissionName) {
+    return async (req, res, next) => {
+        if (!req.session || !req.session.user) {
+            return res.status(401).json({ error: 'Unauthorized: Please log in.' });
+        }
+
+        const { role, status, user_id } = req.session.user;
+
+        if (status !== 'active') {
+            return res.status(403).json({ error: 'Forbidden: Account is not active.' });
+        }
+
+        if (role === 'super_admin') {
+            return next();
+        }
+
+        if (role !== 'admin') {
+            return res.status(403).json({ error: 'Forbidden: Administrative privileges required.' });
+        }
+
+        try {
+            const [rows] = await db.execute(
+                'SELECT permission_id FROM admin_permissions WHERE admin_id = ? AND permission_name = ?',
+                [user_id, permissionName]
+            );
+
+            if (rows.length === 0) {
+                return res.status(403).json({
+                    error: `Forbidden: Missing required administrative permission '${permissionName}'.`
+                });
+            }
+
+            next();
+        } catch (err) {
+            console.error('Permission check error:', err.message);
+            res.status(500).json({ error: 'Failed to verify admin permissions.' });
+        }
+    };
+}
+
 module.exports = {
     isAuthenticated,
     requireRole,
     requireSeller,
-    verifyProductOwnership
+    verifyProductOwnership,
+    requireAdmin,
+    requireSuperAdmin,
+    requirePermission
 };

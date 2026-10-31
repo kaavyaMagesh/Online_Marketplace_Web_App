@@ -76,7 +76,11 @@ async function seedDatabase() {
             }
             console.log('✅ Seeded 6 initial test products');
         } else {
-            console.log(`ℹ️  Products table already has ${prodCount[0].count} product(s).`);
+            console.log(`ℹ️  Products table already has ${prodCount[0].count} product(s). Resetting active status for core items...`);
+            await pool.query("UPDATE products SET status = 'active', stock_quantity = 20 WHERE product_id = 1");
+            await pool.query("UPDATE products SET status = 'active', stock_quantity = 15 WHERE product_id = 2");
+            await pool.query("UPDATE products SET status = 'active', stock_quantity = 30 WHERE product_id = 3");
+            await pool.query("UPDATE products SET status = 'active', stock_quantity = 12 WHERE product_id = 4");
         }
 
         console.log('🎉 Database seeding complete!');

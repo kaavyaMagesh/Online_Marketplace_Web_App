@@ -5,6 +5,8 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",
+    "test": "node tests/integration_test.js",
+    "test:all": "node tests/integration_test.js && node tests/test_day6.js && node tests/test_day7.js && node tests/test_day8.js",
     "seed": "node database/seed_data.js",
     "migrate": "node database/migrate_day3.js"
   },
