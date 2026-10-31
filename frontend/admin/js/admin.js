@@ -8,39 +8,57 @@ async function checkAdminAccess() {
 
     try {
         const isSuperAdminPage = window.location.pathname.includes('super-dashboard.html');
-        const endpoint = isSuperAdminPage ? '/api/admin/super/check' : '/api/admin/check';
 
-        const response = await fetch(endpoint, {
-            credentials: 'same-origin'
-        });
-
-        if (response.ok) {
-            document.body.style.visibility = 'visible';
-            initPageFeatures();
-            return;
-        }
-
-        if (response.status === 401) {
+        // Check active session and role
+        const meRes = await fetch('/api/auth/me', { credentials: 'same-origin' });
+        if (!meRes.ok || meRes.status === 401) {
             window.location.href = '/adminlogin';
             return;
         }
 
-        if (message) {
-            message.textContent = 'Access denied. Administrator permissions required.';
-            message.style.color = '#dc2626';
-            message.style.padding = '20px';
+        const meData = await meRes.json();
+        const user = meData.user;
+
+        if (!user || user.status !== 'active') {
+            window.location.href = '/adminlogin';
+            return;
+        }
+
+        // Super Admin page requires super_admin
+        if (isSuperAdminPage) {
+            if (user.role !== 'super_admin') {
+                showAccessDenied('Access denied. Super Administrator permissions required.');
+                return;
+            }
+        } else {
+            // General admin pages allow both admin and super_admin
+            if (user.role !== 'admin' && user.role !== 'super_admin') {
+                showAccessDenied('Access denied. Administrator permissions required.');
+                return;
+            }
         }
 
         document.body.style.visibility = 'visible';
-        const main = document.querySelector('.main-content');
-        const sidebar = document.querySelector('.sidebar');
-        if (main) main.style.display = 'none';
-        if (sidebar) sidebar.style.display = 'none';
+        initPageFeatures();
 
     } catch (error) {
         console.error('Authentication check failed:', error);
         document.body.style.visibility = 'visible';
     }
+}
+
+function showAccessDenied(msg) {
+    const message = document.getElementById('access-message');
+    if (message) {
+        message.textContent = msg;
+        message.style.color = '#dc2626';
+        message.style.padding = '20px';
+    }
+    document.body.style.visibility = 'visible';
+    const main = document.querySelector('.main-content');
+    const sidebar = document.querySelector('.sidebar');
+    if (main) main.style.display = 'none';
+    if (sidebar) sidebar.style.display = 'none';
 }
 
 // Global logout handler
