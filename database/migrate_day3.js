@@ -65,7 +65,99 @@ async function migrate() {
             console.log('✅ Added virtual image_url column to products');
         }
 
-        console.log('🎉 Day 3 schema updates completed successfully!');
+        // 4. Ensure cart has customer_id column (and backwards-compatible user_id virtual column)
+        const [custCols] = await pool.query("SHOW COLUMNS FROM cart LIKE 'customer_id'");
+        if (custCols.length === 0) {
+            // Find existing foreign key on user_id if any
+            const [fks] = await pool.query(
+                "SELECT CONSTRAINT_NAME FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cart' AND COLUMN_NAME = 'user_id' AND REFERENCED_TABLE_NAME IS NOT NULL"
+            );
+            for (const fk of fks) {
+                try {
+                    await pool.query(`ALTER TABLE cart DROP FOREIGN KEY ${fk.CONSTRAINT_NAME}`);
+                } catch (e) {
+                    // Ignore if already dropped
+                }
+            }
+            const [userCols] = await pool.query("SHOW COLUMNS FROM cart LIKE 'user_id'");
+            if (userCols.length > 0 && userCols[0].Extra !== 'VIRTUAL GENERATED') {
+                try {
+                    await pool.query("ALTER TABLE cart DROP INDEX user_id");
+                } catch (e) {
+                    // Ignore if index name differs
+                }
+                await pool.query("ALTER TABLE cart CHANGE COLUMN user_id customer_id INT NOT NULL UNIQUE");
+                await pool.query("ALTER TABLE cart ADD CONSTRAINT fk_cart_customer FOREIGN KEY (customer_id) REFERENCES users(user_id) ON DELETE CASCADE");
+                await pool.query("ALTER TABLE cart ADD COLUMN user_id INT GENERATED ALWAYS AS (customer_id) VIRTUAL");
+                console.log('✅ Updated cart table to use customer_id with user_id virtual column');
+            } else {
+                await pool.query("ALTER TABLE cart ADD COLUMN customer_id INT NOT NULL UNIQUE");
+                await pool.query("ALTER TABLE cart ADD CONSTRAINT fk_cart_customer FOREIGN KEY (customer_id) REFERENCES users(user_id) ON DELETE CASCADE");
+                console.log('✅ Added customer_id to cart');
+            }
+        } else {
+            console.log('ℹ️  customer_id column already exists on cart');
+        }
+
+        // 5. Ensure cart_items has price, created_at, and updated_at
+        const [priceCols] = await pool.query("SHOW COLUMNS FROM cart_items LIKE 'price'");
+        if (priceCols.length === 0) {
+            await pool.query("ALTER TABLE cart_items ADD COLUMN price DECIMAL(10, 2) NOT NULL DEFAULT 0.00 AFTER quantity");
+            await pool.query("ALTER TABLE cart_items ADD CONSTRAINT cart_items_chk_price CHECK (price >= 0)");
+            console.log('✅ Added price column to cart_items');
+        } else {
+            console.log('ℹ️  price column already exists on cart_items');
+        }
+
+        const [createdCols] = await pool.query("SHOW COLUMNS FROM cart_items LIKE 'created_at'");
+        if (createdCols.length === 0) {
+            const [addedCols] = await pool.query("SHOW COLUMNS FROM cart_items LIKE 'added_at'");
+            if (addedCols.length > 0 && addedCols[0].Extra !== 'VIRTUAL GENERATED') {
+                await pool.query("ALTER TABLE cart_items CHANGE COLUMN added_at created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+                await pool.query("ALTER TABLE cart_items ADD COLUMN added_at TIMESTAMP GENERATED ALWAYS AS (created_at) VIRTUAL");
+                console.log('✅ Renamed added_at to created_at and added virtual added_at in cart_items');
+            } else {
+                await pool.query("ALTER TABLE cart_items ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+                console.log('✅ Added created_at to cart_items');
+            }
+        } else {
+            console.log('ℹ️  created_at column already exists on cart_items');
+        }
+
+        const [updatedCols] = await pool.query("SHOW COLUMNS FROM cart_items LIKE 'updated_at'");
+        if (updatedCols.length === 0) {
+            await pool.query("ALTER TABLE cart_items ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+            console.log('✅ Added updated_at to cart_items');
+        } else {
+            console.log('ℹ️  updated_at column already exists on cart_items');
+        }
+
+        // 6. Ensure order_items has item_status column
+        const [statusCols] = await pool.query("SHOW COLUMNS FROM order_items LIKE 'item_status'");
+        if (statusCols.length === 0) {
+            await pool.query(
+                "ALTER TABLE order_items ADD COLUMN item_status ENUM('pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled') NOT NULL DEFAULT 'confirmed' AFTER subtotal"
+            );
+            console.log('✅ Added item_status column to order_items');
+        } else {
+            console.log('ℹ️  item_status column already exists on order_items');
+        }
+
+        // 7. Seed initial system settings if empty
+        const [settingsCount] = await pool.query("SELECT COUNT(*) AS count FROM system_settings");
+        if (settingsCount[0].count === 0) {
+            await pool.query(`
+                INSERT INTO system_settings (setting_key, setting_value) VALUES
+                ('site_name', 'GoodsPlatz Marketplace'),
+                ('maintenance_mode', 'false'),
+                ('min_order_amount', '100'),
+                ('currency', 'INR'),
+                ('free_shipping_threshold', '499')
+            `);
+            console.log('✅ Seeded default system settings');
+        }
+
+        console.log('🎉 Database schema migrations completed successfully!');
         process.exit(0);
     } catch (err) {
         console.error('❌ Migration failed:', err);

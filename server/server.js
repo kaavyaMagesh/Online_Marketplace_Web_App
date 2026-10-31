@@ -146,6 +146,10 @@ app.use('/api/cart', cartRoutes);
 const orderRoutes = require('./routes/orders');
 app.use('/api/orders', orderRoutes);
 
+// Admin & Super Admin routes
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/superadmin', require('./routes/superadmin'));
+
 // Seller dashboard quick redirect
 app.get('/seller', (req, res) => {
     res.redirect('/seller/dashboard.html');

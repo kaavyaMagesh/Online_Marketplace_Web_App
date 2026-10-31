@@ -80,11 +80,12 @@ CREATE TABLE IF NOT EXISTS products (
 -- 5. Shopping carts
 CREATE TABLE IF NOT EXISTS cart (
     cart_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL UNIQUE,
+    customer_id INT NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    user_id INT GENERATED ALWAYS AS (customer_id) VIRTUAL,
+    FOREIGN KEY (customer_id) REFERENCES users(user_id)
         ON DELETE CASCADE
 );
 
@@ -94,8 +95,13 @@ CREATE TABLE IF NOT EXISTS cart_items (
     cart_id INT NOT NULL,
     product_id INT NOT NULL,
     quantity INT NOT NULL DEFAULT 1,
-    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    added_at TIMESTAMP GENERATED ALWAYS AS (created_at) VIRTUAL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
     CHECK (quantity > 0),
+    CHECK (price >= 0),
     UNIQUE KEY unique_cart_product (cart_id, product_id),
     FOREIGN KEY (cart_id) REFERENCES cart(cart_id)
         ON DELETE CASCADE,
@@ -140,6 +146,14 @@ CREATE TABLE IF NOT EXISTS order_items (
     price DECIMAL(10, 2) NOT NULL,
     subtotal DECIMAL(10, 2)
         GENERATED ALWAYS AS (quantity * price) STORED,
+    item_status ENUM(
+        'pending',
+        'confirmed',
+        'processing',
+        'shipped',
+        'delivered',
+        'cancelled'
+    ) NOT NULL DEFAULT 'confirmed',
     CHECK (quantity > 0),
     CHECK (price >= 0),
     FOREIGN KEY (order_id) REFERENCES orders(order_id)
@@ -147,7 +161,8 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (product_id) REFERENCES products(product_id)
         ON DELETE SET NULL,
     FOREIGN KEY (seller_id) REFERENCES users(user_id),
-    INDEX idx_order_item_seller (seller_id)
+    INDEX idx_order_item_seller (seller_id),
+    INDEX idx_order_item_status (item_status)
 );
 
 -- 9. Product reviews
