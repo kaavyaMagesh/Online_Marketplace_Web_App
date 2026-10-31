@@ -17,11 +17,11 @@ const pool = mysql.createPool({
 async function testConnection() {
     try {
         const connection = await pool.getConnection();
-        console.log('✅ Connected to MySQL database:', process.env.DB_NAME || 'online_marketplace');
+        console.log(' Connected to MySQL database:', process.env.DB_NAME || 'online_marketplace');
         connection.release();
         return true;
     } catch (error) {
-        console.error('❌ MySQL Connection Error:', error.message);
+        console.error(' MySQL Connection Error:', error.message);
         return false;
     }
 }

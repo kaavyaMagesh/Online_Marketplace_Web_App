@@ -26,8 +26,13 @@ app.use(session({
 // Static files (frontend)
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Root route
+// Root route - Serve storefront
 app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+// API Info endpoint
+app.get('/api', (req, res) => {
     res.json({
         message: 'Welcome to the Online Marketplace API',
         status: 'running'
@@ -115,6 +120,9 @@ app.post('/api/auth/logout', (req, res) => {
     });
 });
 
+// Authentication routes
+app.use('/api/auth', require('../routes/authRoutes'));
+
 // Seller Product routes
 const sellerProductRoutes = require('./routes/sellerProducts');
 app.use('/api/seller/products', sellerProductRoutes);
@@ -125,6 +133,14 @@ app.use('/api/seller', require('../routes/sellerRoutes'));
 // Product routes
 const productRoutes = require('./routes/products');
 app.use('/api/products', productRoutes);
+
+// Shopping cart routes
+const cartRoutes = require('./routes/cart');
+app.use('/api/cart', cartRoutes);
+
+// Orders routes
+const orderRoutes = require('./routes/orders');
+app.use('/api/orders', orderRoutes);
 
 // Seller dashboard quick redirect
 app.get('/seller', (req, res) => {

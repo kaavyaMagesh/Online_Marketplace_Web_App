@@ -43,18 +43,27 @@ router.get("/categories", requireSeller, async (req, res) => {
   }
 });
 
-// GET: View this seller's products
+// GET: View this seller's products (ordered by stock_quantity ASC by default)
 router.get("/", requireSeller, async (req, res) => {
   try {
     const sellerId = req.session.user.user_id;
+    const sortBy = req.query.sort;
+
+    let orderClause = "ORDER BY p.stock_quantity ASC, p.created_at DESC";
+    if (sortBy === "newest") {
+      orderClause = "ORDER BY p.created_at DESC";
+    } else if (sortBy === "stock_desc") {
+      orderClause = "ORDER BY p.stock_quantity DESC";
+    }
 
     const [products] = await db.execute(
       `SELECT p.product_id, p.seller_id, p.product_name, p.description, p.price,
-              p.stock_quantity, p.image, p.category_id, c.category_name, p.status, p.created_at
+              p.stock_quantity, p.stock_quantity AS stock, p.image, p.image AS image_url,
+              p.category_id, c.category_name, p.status, p.created_at
        FROM products p
        LEFT JOIN categories c ON p.category_id = c.category_id
        WHERE p.seller_id = ?
-       ORDER BY p.created_at DESC`,
+       ${orderClause}`,
       [sellerId]
     );
 
@@ -91,7 +100,7 @@ router.get("/:id", requireSeller, async (req, res) => {
 
     if (!isOwner && !isAdmin) {
       return res.status(403).json({
-        message: "Product not owned by you.",
+        message: "Product not found or not owned by you.",
         error: "Forbidden: You do not have permission to manage this product."
       });
     }
@@ -127,13 +136,14 @@ router.post("/", requireSeller, async (req, res) => {
       price === undefined ||
       !Number.isFinite(Number(price)) ||
       Number(price) < 0 ||
+      effectiveStock === undefined ||
       !Number.isInteger(Number(effectiveStock)) ||
       Number(effectiveStock) < 0 ||
       !Number.isInteger(Number(category_id)) ||
       Number(category_id) <= 0
     ) {
       return res.status(400).json({
-        message: "Enter a valid name, price, stock quantity and category."
+        message: "Enter a valid name, price, non-negative stock quantity and category."
       });
     }
 
@@ -193,7 +203,7 @@ router.put("/:id", requireSeller, async (req, res) => {
 
     if (existing.length === 0) {
       return res.status(404).json({
-        message: "Product not found or not owned by you.",
+        message: "Product not found.",
         error: "Product not found."
       });
     }
@@ -221,40 +231,66 @@ router.put("/:id", requireSeller, async (req, res) => {
       status
     } = req.body;
 
-    const targetName = product_name !== undefined ? product_name : current.product_name;
-    const targetDesc = description !== undefined ? description : current.description;
-    const targetPrice = price !== undefined ? price : current.price;
-    const rawStock = stock_quantity !== undefined ? stock_quantity : (stock !== undefined ? stock : current.stock_quantity);
-    const rawCategory = category_id !== undefined ? category_id : current.category_id;
-    const targetImage = image !== undefined ? image : (image_url !== undefined ? image_url : current.image);
-    const targetStatus = status !== undefined ? status : current.status;
-
-    if (
-      typeof targetName !== "string" ||
-      !targetName.trim() ||
-      targetPrice === undefined ||
-      !Number.isFinite(Number(targetPrice)) ||
-      Number(targetPrice) < 0 ||
-      !Number.isInteger(Number(rawStock)) ||
-      Number(rawStock) < 0 ||
-      !Number.isInteger(Number(rawCategory)) ||
-      Number(rawCategory) <= 0
-    ) {
-      return res.status(400).json({ message: "Invalid product details." });
+    // Validate stock if provided - prevent negative stock
+    const rawStock = stock_quantity !== undefined ? stock_quantity : stock;
+    if (rawStock !== undefined) {
+      const parsedStock = Number(rawStock);
+      if (!Number.isInteger(parsedStock) || parsedStock < 0) {
+        return res.status(400).json({
+          message: "Stock quantity must be a non-negative integer.",
+          error: "Invalid stock value."
+        });
+      }
     }
 
+    // Validate price if provided
+    if (price !== undefined) {
+      const parsedPrice = Number(price);
+      if (!Number.isFinite(parsedPrice) || parsedPrice < 0) {
+        return res.status(400).json({
+          message: "Price must be a valid non-negative number.",
+          error: "Invalid price."
+        });
+      }
+    }
+
+    // Validate product name if provided
+    if (product_name !== undefined) {
+      if (typeof product_name !== "string" || !product_name.trim()) {
+        return res.status(400).json({
+          message: "Product name cannot be empty.",
+          error: "Invalid product name."
+        });
+      }
+    }
+
+    // Validate category if provided
+    if (category_id !== undefined && category_id !== null) {
+      const parsedCat = Number(category_id);
+      if (!Number.isInteger(parsedCat) || parsedCat <= 0) {
+        return res.status(400).json({ message: "Invalid category ID." });
+      }
+      const [categories] = await db.execute(
+        "SELECT category_id FROM categories WHERE category_id = ? AND status = 'active'",
+        [parsedCat]
+      );
+      if (categories.length === 0) {
+        return res.status(400).json({ message: "Invalid or inactive category." });
+      }
+    }
+
+    // Validate status if provided
     if (status !== undefined && !["active", "inactive"].includes(status)) {
       return res.status(400).json({ message: "Status must be active or inactive." });
     }
 
-    const [categories] = await db.execute(
-      "SELECT category_id FROM categories WHERE category_id = ? AND status = 'active'",
-      [rawCategory]
-    );
-
-    if (categories.length === 0) {
-      return res.status(400).json({ message: "Invalid or inactive category." });
-    }
+    const targetName = product_name !== undefined ? product_name.trim() : current.product_name;
+    const targetDesc = description !== undefined ? description : current.description;
+    const targetPrice = price !== undefined ? Number(price) : Number(current.price);
+    const targetStock = rawStock !== undefined ? Number(rawStock) : Number(current.stock_quantity);
+    const targetCategory = category_id !== undefined ? (category_id ? Number(category_id) : null) : current.category_id;
+    const targetImage = image !== undefined ? image : (image_url !== undefined ? image_url : current.image);
+    const targetStatus = status !== undefined ? status : current.status;
 
     const [result] = await db.execute(
       `UPDATE products
@@ -262,11 +298,11 @@ router.put("/:id", requireSeller, async (req, res) => {
            stock_quantity = ?, category_id = ?, image = ?, status = ?
        WHERE product_id = ? AND seller_id = ?`,
       [
-        targetName.trim(),
+        targetName,
         targetDesc || null,
-        Number(targetPrice),
-        Number(rawStock),
-        Number(rawCategory),
+        targetPrice,
+        targetStock,
+        targetCategory,
         targetImage || null,
         targetStatus,
         productId,
