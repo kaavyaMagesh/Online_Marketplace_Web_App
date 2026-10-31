@@ -241,4 +241,196 @@ router.patch('/products/:productId/status', requirePermission('manage_products')
     }
 });
 
+/**
+ * GET /api/admin/stats
+ * Overview counts and KPIs for the Admin & Super Admin Dashboards.
+ */
+router.get('/stats', async (req, res) => {
+    try {
+        const [[{ count: totalCustomers }]] = await db.query("SELECT COUNT(*) AS count FROM users WHERE role = 'customer'");
+        const [[{ count: totalSellers }]]   = await db.query("SELECT COUNT(*) AS count FROM users WHERE role = 'seller'");
+        const [[{ count: totalAdmins }]]    = await db.query("SELECT COUNT(*) AS count FROM users WHERE role IN ('admin', 'super_admin')");
+        const [[{ count: totalProducts }]]  = await db.query("SELECT COUNT(*) AS count FROM products");
+        const [[{ count: totalOrders }]]    = await db.query("SELECT COUNT(*) AS count FROM orders");
+        const [[{ sum: totalRevenue }]]     = await db.query("SELECT COALESCE(SUM(total_amount), 0) AS sum FROM orders WHERE status != 'cancelled'");
+
+        const [recentLogs] = await db.query(
+            `SELECT l.log_id, l.action, l.details, l.created_at, u.name AS user_name, u.role
+             FROM system_logs l
+             LEFT JOIN users u ON l.user_id = u.user_id
+             ORDER BY l.created_at DESC
+             LIMIT 8`
+        );
+
+        res.json({
+            total_customers: totalCustomers,
+            total_sellers: totalSellers,
+            total_admins: totalAdmins,
+            total_products: totalProducts,
+            total_orders: totalOrders,
+            total_revenue: totalRevenue,
+            recent_activity: recentLogs
+        });
+    } catch (err) {
+        console.error('Failed to load admin stats:', err.message);
+        res.status(500).json({ error: 'Unable to load dashboard statistics.' });
+    }
+});
+
+/**
+ * GET /api/admin/customers
+ * List registered customers with order counts.
+ */
+router.get('/customers', async (req, res) => {
+    try {
+        const [customers] = await db.query(
+            `SELECT
+                u.user_id,
+                u.name,
+                u.email,
+                u.phone,
+                u.status,
+                u.created_at,
+                COUNT(o.order_id) AS total_orders,
+                COALESCE(SUM(o.total_amount), 0) AS total_spent
+             FROM users u
+             LEFT JOIN orders o ON u.user_id = o.customer_id
+             WHERE u.role = 'customer'
+             GROUP BY u.user_id
+             ORDER BY u.created_at DESC`
+        );
+
+        res.json({
+            count: customers.length,
+            customers
+        });
+    } catch (err) {
+        console.error('Failed to list customers:', err.message);
+        res.status(500).json({ error: 'Unable to retrieve customer list.' });
+    }
+});
+
+/**
+ * PATCH /api/admin/customers/:customerId/status
+ * Block or unblock a customer account.
+ */
+router.patch('/customers/:customerId/status', async (req, res) => {
+    try {
+        const adminId = req.session.user.user_id;
+        const customerId = Number(req.params.customerId);
+        const { status: targetStatus } = req.body;
+        const clientIp = req.ip || req.connection.remoteAddress || '127.0.0.1';
+
+        if (!['active', 'blocked'].includes(targetStatus)) {
+            return res.status(400).json({ error: "Status must be 'active' or 'blocked'." });
+        }
+
+        const [users] = await db.execute('SELECT user_id, name, email, role FROM users WHERE user_id = ?', [customerId]);
+        if (users.length === 0 || users[0].role !== 'customer') {
+            return res.status(404).json({ error: 'Customer not found.' });
+        }
+
+        await db.execute('UPDATE users SET status = ? WHERE user_id = ?', [targetStatus, customerId]);
+
+        logActivity(
+            adminId,
+            targetStatus === 'blocked' ? 'CUSTOMER_BLOCKED' : 'CUSTOMER_UNBLOCKED',
+            { customer_id: customerId, email: users[0].email, new_status: targetStatus },
+            clientIp
+        );
+
+        res.json({
+            message: `Customer account updated to '${targetStatus}'.`,
+            customer_id: customerId,
+            status: targetStatus
+        });
+    } catch (err) {
+        console.error('Failed to update customer status:', err.message);
+        res.status(500).json({ error: 'Unable to update customer status.' });
+    }
+});
+
+/**
+ * GET /api/admin/orders
+ * List all marketplace orders with line item summary.
+ */
+router.get('/orders', async (req, res) => {
+    try {
+        const [orders] = await db.query(
+            `SELECT
+                o.order_id,
+                o.customer_id,
+                u.name AS customer_name,
+                u.email AS customer_email,
+                o.total_amount,
+                o.status,
+                o.shipping_address,
+                o.created_at,
+                COUNT(oi.order_item_id) AS total_items
+             FROM orders o
+             JOIN users u ON o.customer_id = u.user_id
+             LEFT JOIN order_items oi ON o.order_id = oi.order_id
+             GROUP BY o.order_id
+             ORDER BY o.created_at DESC`
+        );
+
+        res.json({
+            count: orders.length,
+            orders
+        });
+    } catch (err) {
+        console.error('Failed to list orders:', err.message);
+        res.status(500).json({ error: 'Unable to retrieve orders.' });
+    }
+});
+
+/**
+ * GET /api/admin/reports
+ * Aggregated sales and performance reporting for admins and super admins.
+ */
+router.get('/reports', async (req, res) => {
+    try {
+        const [[summary]] = await db.query(
+            `SELECT
+                COUNT(DISTINCT order_id) AS total_orders,
+                COALESCE(SUM(total_amount), 0) AS gross_sales,
+                COALESCE(AVG(total_amount), 0) AS avg_order_value
+             FROM orders
+             WHERE status != 'cancelled'`
+        );
+
+        const [statusBreakdown] = await db.query(
+            `SELECT status, COUNT(*) AS count, COALESCE(SUM(total_amount), 0) AS total_value
+             FROM orders
+             GROUP BY status`
+        );
+
+        const [topProducts] = await db.query(
+            `SELECT
+                p.product_id,
+                p.product_name,
+                u.name AS seller_name,
+                SUM(oi.quantity) AS units_sold,
+                SUM(oi.quantity * oi.price) AS total_revenue
+             FROM order_items oi
+             JOIN products p ON oi.product_id = p.product_id
+             JOIN users u ON p.seller_id = u.user_id
+             JOIN orders o ON oi.order_id = o.order_id
+             WHERE o.status != 'cancelled'
+             GROUP BY p.product_id
+             ORDER BY total_revenue DESC
+             LIMIT 5`
+        );
+
+        res.json({
+            summary,
+            status_breakdown: statusBreakdown,
+            top_products: topProducts
+        });
+    } catch (err) {
+        console.error('Failed to generate admin reports:', err.message);
+        res.status(500).json({ error: 'Unable to generate reports.' });
+    }
+});
+
 module.exports = router;

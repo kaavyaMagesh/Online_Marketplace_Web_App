@@ -30,7 +30,7 @@ app.use(session({
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Login page (Admin/General fallback)
-app.get('/login', (req, res) => {
+app.get(['/login', '/adminlogin'], (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/login.html'));
 });
 

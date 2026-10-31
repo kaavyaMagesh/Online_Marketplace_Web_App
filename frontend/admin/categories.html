@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,38 +11,36 @@
     <p id="access-message"></p>
 
     <aside class="sidebar">
-        <h2>Admin Panel</h2>
+        <h2>🛡️ Admin Panel</h2>
 
         <nav>
-            <a href="dashboard.html">Dashboard</a>
-            <a href="customers.html">Customers</a>
-            <a href="sellers.html">Sellers</a>
-            <a href="products.html">Products</a>
-            <a href="categories.html" class="active">Categories</a>
-            <a href="#">Orders</a>
-            <a href="#">Reports</a>
+            <a href="dashboard.html">📊 Dashboard</a>
+            <a href="customers.html">👥 Customers</a>
+            <a href="sellers.html">🏪 Sellers</a>
+            <a href="products.html">📦 Products</a>
+            <a href="categories.html" class="active">🏷️ Categories</a>
+            <a href="super-dashboard.html">👑 Super Admin</a>
+            <a href="#" class="logout-link logout-btn">🚪 Logout</a>
         </nav>
     </aside>
 
     <main class="main-content">
         <header class="page-header">
-            <h1>Category Management</h1>
-            <span>Administrator</span>
+            <div>
+                <h1>Category Management</h1>
+                <span style="color:#64748b;">Create and manage marketplace catalog categories</span>
+            </div>
+            <button type="button" id="add-category-btn" class="btn btn-success">
+                + Add Category
+            </button>
         </header>
 
         <section class="card">
-            <header class="page-header">
-                <h2>Product Categories</h2>
-                <button type="button" id="add-category-btn">
-                    + Add Category
-                </button>
-            </header>
-
             <input
                 type="search"
                 id="category-search"
                 class="search-input"
-                placeholder="Search categories..."
+                placeholder="Search categories by name..."
                 aria-label="Search categories"
             >
 
@@ -53,15 +50,14 @@
                         <th>Category ID</th>
                         <th>Category Name</th>
                         <th>Description</th>
-                        <th>Actions</th>
+                        <th>Products</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
 
                 <tbody id="category-table-body">
                     <tr>
-                        <td colspan="4">
-                            Category records will appear here.
-                        </td>
+                        <td colspan="5" style="color:#64748b;">Loading categories...</td>
                     </tr>
                 </tbody>
             </table>

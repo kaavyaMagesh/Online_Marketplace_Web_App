@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,16 +11,16 @@
 
   <!-- Shared Admin Navigation -->
   <aside class="sidebar">
-    <h2>Admin Panel</h2>
+    <h2>🛡️ Admin Panel</h2>
 
     <nav>
-      <a href="dashboard.html" class="active">Dashboard</a>
-      <a href="customers.html">Customers</a>
-      <a href="sellers.html">Sellers</a>
-      <a href="products.html">Products</a>
-      <a href="categories.html">Categories</a>
-      <a href="#">Orders</a>
-      <a href="#">Reports</a>
+      <a href="dashboard.html" class="active">📊 Dashboard</a>
+      <a href="customers.html">👥 Customers</a>
+      <a href="sellers.html">🏪 Sellers</a>
+      <a href="products.html">📦 Products</a>
+      <a href="categories.html">🏷️ Categories</a>
+      <a href="super-dashboard.html">👑 Super Admin</a>
+      <a href="#" class="logout-link logout-btn">🚪 Logout</a>
     </nav>
   </aside>
 
@@ -29,35 +28,45 @@
   <main class="main-content">
 
     <header class="page-header">
-      <h1>Admin Dashboard</h1>
-      <span>Administrator</span>
+      <div>
+        <h1>Admin Dashboard</h1>
+        <span style="color:#64748b;">Live Marketplace Metrics & Recent Activity</span>
+      </div>
+      <div>
+        <a href="/" class="btn btn-secondary">🛍️ View Storefront</a>
+      </div>
     </header>
 
     <section class="dashboard-stats">
       <div class="stat-card">
         <h3>Total Customers</h3>
-        <p>—</p>
+        <p id="stat-customers">—</p>
       </div>
 
       <div class="stat-card">
         <h3>Total Sellers</h3>
-        <p>—</p>
+        <p id="stat-sellers">—</p>
       </div>
 
       <div class="stat-card">
         <h3>Total Products</h3>
-        <p>—</p>
+        <p id="stat-products">—</p>
       </div>
 
       <div class="stat-card">
         <h3>Total Orders</h3>
-        <p>—</p>
+        <p id="stat-orders">—</p>
       </div>
     </section>
 
     <section class="card">
-      <h2>Recent Activity</h2>
-      <p>Recent marketplace activity will appear here.</p>
+      <header class="page-header" style="margin-bottom:15px;">
+        <h2>Recent Marketplace Activity</h2>
+        <small style="color:#64748b;">Live Audit Log Stream</small>
+      </header>
+      <div id="recent-activity-list">
+        <p style="color:#64748b;">Loading activity logs...</p>
+      </div>
     </section>
 
   </main>

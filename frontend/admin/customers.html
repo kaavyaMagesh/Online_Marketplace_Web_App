@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,16 +11,16 @@
 
   <!-- Shared Admin Navigation -->
   <aside class="sidebar">
-    <h2>Admin Panel</h2>
+    <h2>🛡️ Admin Panel</h2>
 
     <nav>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="customers.html" class="active">Customers</a>
-      <a href="sellers.html">Sellers</a>
-      <a href="products.html">Products</a>
-      <a href="categories.html">Categories</a>
-      <a href="#">Orders</a>
-      <a href="#">Reports</a>
+      <a href="dashboard.html">📊 Dashboard</a>
+      <a href="customers.html" class="active">👥 Customers</a>
+      <a href="sellers.html">🏪 Sellers</a>
+      <a href="products.html">📦 Products</a>
+      <a href="categories.html">🏷️ Categories</a>
+      <a href="super-dashboard.html">👑 Super Admin</a>
+      <a href="#" class="logout-link logout-btn">🚪 Logout</a>
     </nav>
   </aside>
 
@@ -29,17 +28,18 @@
   <main class="main-content">
 
     <header class="page-header">
-      <h1>Customer Management</h1>
-      <span>Administrator</span>
+      <div>
+        <h1>Customer Management</h1>
+        <span style="color:#64748b;">View and moderate shopper accounts</span>
+      </div>
     </header>
 
     <section class="card">
-      <h2>Customers</h2>
-
       <input
         type="search"
+        id="customer-search"
         class="search-input"
-        placeholder="Search customers..."
+        placeholder="Search customers by name or email..."
         aria-label="Search customers"
       >
 
@@ -49,16 +49,15 @@
             <th>Customer ID</th>
             <th>Name</th>
             <th>Email</th>
+            <th>Orders & Spent</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
 
-        <tbody>
+        <tbody id="customers-table-body">
           <tr>
-            <td colspan="5">
-              Customer records will appear here.
-            </td>
+            <td colspan="6" style="color:#64748b;">Loading customer records...</td>
           </tr>
         </tbody>
       </table>
@@ -66,6 +65,5 @@
 
   </main>
   <script src="js/admin.js"></script>
-
 </body>
 </html>

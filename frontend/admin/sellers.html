@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,19 +9,18 @@
 <body style="visibility: hidden;">
   <p id="access-message"></p>
 
-
   <!-- Shared Admin Navigation -->
   <aside class="sidebar">
-    <h2>Admin Panel</h2>
+    <h2>🛡️ Admin Panel</h2>
 
     <nav>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="customers.html">Customers</a>
-      <a href="sellers.html" class="active">Sellers</a>
-      <a href="products.html">Products</a>
-      <a href="categories.html">Categories</a>
-      <a href="#">Orders</a>
-      <a href="#">Reports</a>
+      <a href="dashboard.html">📊 Dashboard</a>
+      <a href="customers.html">👥 Customers</a>
+      <a href="sellers.html" class="active">🏪 Sellers</a>
+      <a href="products.html">📦 Products</a>
+      <a href="categories.html">🏷️ Categories</a>
+      <a href="super-dashboard.html">👑 Super Admin</a>
+      <a href="#" class="logout-link logout-btn">🚪 Logout</a>
     </nav>
   </aside>
 
@@ -30,17 +28,18 @@
   <main class="main-content">
 
     <header class="page-header">
-      <h1>Seller Management</h1>
-      <span>Administrator</span>
+      <div>
+        <h1>Seller Management</h1>
+        <span style="color:#64748b;">Review seller accounts, catalog size, and approve or suspend vendors</span>
+      </div>
     </header>
 
     <section class="card">
-      <h2>Sellers</h2>
-
       <input
         type="search"
+        id="seller-search"
         class="search-input"
-        placeholder="Search sellers..."
+        placeholder="Search sellers by name or email..."
         aria-label="Search sellers"
       >
 
@@ -50,16 +49,15 @@
             <th>Seller ID</th>
             <th>Seller Name</th>
             <th>Email</th>
+            <th>Inventory Info</th>
             <th>Approval Status</th>
             <th>Actions</th>
           </tr>
         </thead>
 
-        <tbody>
+        <tbody id="sellers-table-body">
           <tr>
-            <td colspan="5">
-              Seller records will appear here.
-            </td>
+            <td colspan="6" style="color:#64748b;">Loading seller records...</td>
           </tr>
         </tbody>
       </table>
@@ -67,6 +65,5 @@
 
   </main>
   <script src="js/admin.js"></script>
-
 </body>
 </html>
