@@ -1,15 +1,15 @@
-# GoodsPlatz — Online Marketplace Web Application
+# GoodsPlatz / MarketHub — Online Marketplace Web Application
 
 A full-stack, multi-role online marketplace built with **Node.js**, **Express**, **MySQL**, and **Vanilla JavaScript**.
 
-GoodsPlatz supports three distinct user roles — **Customer**, **Seller**, and **Admin / Super Admin** — each with dedicated workflows, strict data isolation, transactional checkout consistency, and audit logging over a shared MySQL database.
+The marketplace supports four distinct user roles — **Customer**, **Seller**, **Admin**, and **Super Admin** — each with dedicated workflows, strict data isolation, transactional checkout consistency, and audit logging over a shared MySQL database.
 
 ---
 
 ## Table of Contents
 
 - [Project Overview](#project-overview)
-- [Team Structure & Branch Organization](#team-structure--branch-organization)
+- [Team Members & Responsibilities](#team-members--responsibilities)
 - [Features](#features)
 - [Technology Stack](#technology-stack)
 - [User Roles & Test Credentials](#user-roles--test-credentials)
@@ -37,14 +37,13 @@ GoodsPlatz is designed to simulate a realistic online marketplace with multiple 
 
 ---
 
-## Team Structure & Branch Organization
+## Team Members & Responsibilities
 
-| Feature Area | Branch | Teammate | Core Responsibilities |
-|---|---|---|---|
-| Customer + Public Pages | `feature/customer-public-pages` | Teammate A | Customer storefront, browse/search, product details, cart, checkout, order history & cancellation, profile management |
-| Seller Backend + Inventory | `feature/backend-seller` | Teammate B | Seller dashboard, product CRUD, inventory stock management, item-level fulfillment, sales reporting |
-| Admin + Super Admin | `feature/admin-superadmin` | Teammate C | Admin panel, category management, seller moderation, super admin permissions & audit trail logging |
-| Shared Database Schema | `main` | All | Core relational tables, foreign key constraints, migration scripts |
+| Team Member | Feature Area & Branch | Core Responsibilities |
+|---|---|---|
+| **Varshni** | `feature/customer-public-pages` | Customer frontend, authentication, browsing/search, product details, cart, checkout, order history & cancellation, profile management |
+| **Kaavyashri** | `feature/backend-seller` | MySQL schema, Express server, seller dashboard, inventory stock controls, fulfillment, transactional order backend |
+| **Mahalakshmi** | `feature/admin-superadmin` | Admin & Super Admin interfaces, APIs, category management, seller moderation, permissions, reports, and audit logs |
 
 ---
 
@@ -67,6 +66,7 @@ GoodsPlatz is designed to simulate a realistic online marketplace with multiple 
 - **Role-Based Access Control (RBAC)**: Fine-grained permissions (`manage_products`, `manage_categories`, `manage_sellers`, `manage_orders`).
 - **Super Admin Privileges**: Create and promote administrators, assign and revoke permissions, and modify platform settings.
 - **Audit Logging**: Comprehensive, non-blocking activity logger capturing operational events (`ORDER_PLACED`, `SELLER_BLOCKED`, `ADMIN_CREATED`, `SETTING_UPDATED`) with automatic credential sanitization.
+- **Admin Management Interfaces**: Dedicated views for managing customers, sellers, products, categories, logs, and settings.
 
 ---
 
@@ -191,7 +191,9 @@ Ensure you have the following installed on your machine:
    - **Customer Profile**: [http://localhost:5000/profile.html](http://localhost:5000/profile.html)
    - **Seller Inventory Central**: [http://localhost:5000/seller/dashboard.html](http://localhost:5000/seller/dashboard.html)
    - **Seller Orders & Sales Reports**: [http://localhost:5000/seller/orders.html](http://localhost:5000/seller/orders.html)
-   - **Customer Sign In**: [http://localhost:5000/login.html](http://localhost:5000/login.html)
+   - **Admin Panel**: [http://localhost:5000/admin/dashboard.html](http://localhost:5000/admin/dashboard.html)
+   - **Super Admin Dashboard**: [http://localhost:5000/admin/super-dashboard.html](http://localhost:5000/admin/super-dashboard.html)
+   - **Sign In**: [http://localhost:5000/login.html](http://localhost:5000/login.html)
    - **System Health Status**: [http://localhost:5000/api/health](http://localhost:5000/api/health)
 
 ---
@@ -271,6 +273,8 @@ For a step-by-step customer demonstration script suitable for evaluation, see:
 ### 6. Administration & Super Admin (`/api/admin` & `/api/superadmin`)
 | Method | Endpoint | Description | Auth Required |
 |---|---|---|---|
+| `GET` | `/api/admin/check` | Verify authenticated user is an active Admin | Admin / Super Admin |
+| `GET` | `/api/admin/super/check` | Verify authenticated user is a Super Admin | Super Admin |
 | `GET` | `/api/admin/sellers` | List registered sellers and status | Admin (`manage_sellers`) |
 | `PATCH` | `/api/admin/sellers/:id/status` | Block or unblock seller account | Admin (`manage_sellers`) |
 | `POST` | `/api/admin/categories` | Add product category | Admin (`manage_categories`) |
@@ -345,7 +349,19 @@ Online_Marketplace_Web_App/
 │   ├── seed_data.js            # Comprehensive multi-role seed script
 │   └── README.md               # Database setup instructions
 ├── docs/
-│   └── customer-demo.md        # Customer demonstration script (Teammate A)
+│   └── customer-demo.md        # Customer demonstration script
+├── frontend/                   # Admin & Super Admin frontend
+│   ├── login.html              # Dedicated admin login page
+│   └── admin/
+│       ├── css/admin.css       # Admin dashboard styles
+│       ├── js/admin.js         # Admin access verification
+│       ├── js/roleRedirect.js  # Role redirect logic
+│       ├── dashboard.html      # Admin main dashboard
+│       ├── customers.html      # Customer management
+│       ├── sellers.html        # Seller moderation
+│       ├── products.html       # Product moderation
+│       ├── categories.html     # Category management
+│       └── super-dashboard.html# Super admin controls
 ├── middleware/
 │   └── auth.js                 # Authentication & full RBAC permission middleware
 ├── public/                     # Static customer & seller frontend
@@ -378,6 +394,7 @@ Online_Marketplace_Web_App/
 │       ├── seller-dashboard.js # Seller inventory management logic
 │       └── seller-orders.js    # Seller fulfillment & reports logic
 ├── routes/
+│   ├── adminRoutes.js          # Admin role verification endpoints
 │   ├── authRoutes.js           # Auth & profile endpoints
 │   ├── productRoutes.js        # Product catalogue alias
 │   └── sellerRoutes.js         # Seller route delegates
@@ -404,6 +421,7 @@ Online_Marketplace_Web_App/
 │   ├── test_day7.js            # Day 7 seller fulfillment tests
 │   ├── test_day8.js            # Day 8 superadmin & audit log tests
 │   └── api-checklist.md        # Feature checklist
+├── wireframes/                 # Wireframe design assets
 ├── .env.example                # Environment variable template
 ├── .gitignore                  # Excludes .env, node_modules
 └── package.json                # Dependencies and scripts

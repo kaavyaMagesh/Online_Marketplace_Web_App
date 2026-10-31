@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Management</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body style="visibility: hidden;">
+    <p id="access-message"></p>
+
+    <aside class="sidebar">
+        <h2>Admin Panel</h2>
+
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="customers.html">Customers</a>
+            <a href="sellers.html">Sellers</a>
+            <a href="products.html">Products</a>
+            <a href="categories.html" class="active">Categories</a>
+            <a href="#">Orders</a>
+            <a href="#">Reports</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="page-header">
+            <h1>Category Management</h1>
+            <span>Administrator</span>
+        </header>
+
+        <section class="card">
+            <header class="page-header">
+                <h2>Product Categories</h2>
+                <button type="button" id="add-category-btn">
+                    + Add Category
+                </button>
+            </header>
+
+            <input
+                type="search"
+                id="category-search"
+                class="search-input"
+                placeholder="Search categories..."
+                aria-label="Search categories"
+            >
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category ID</th>
+                        <th>Category Name</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="category-table-body">
+                    <tr>
+                        <td colspan="4">
+                            Category records will appear here.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

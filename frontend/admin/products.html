@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body style="visibility: hidden;">
+    <p id="access-message"></p>
+
+    <aside class="sidebar">
+        <h2>Admin Panel</h2>
+
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="customers.html">Customers</a>
+            <a href="sellers.html">Sellers</a>
+            <a href="products.html" class="active">Products</a>
+            <a href="categories.html">Categories</a>
+            <a href="#">Orders</a>
+            <a href="#">Reports</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="page-header">
+            <h1>Product Management</h1>
+            <span>Administrator</span>
+        </header>
+
+        <section class="card">
+            <h2>Marketplace Products</h2>
+
+            <input
+                type="search"
+                id="product-search"
+                class="search-input"
+                placeholder="Search products..."
+                aria-label="Search products"
+            >
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product ID</th>
+                        <th>Product Name</th>
+                        <th>Seller ID</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="product-table-body">
+                    <tr>
+                        <td colspan="7">
+                            Product records will appear here.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

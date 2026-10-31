@@ -4,6 +4,7 @@ const path = require('path');
 require('dotenv').config();
 
 const { pool, testConnection } = require('./db');
+const { requireRole } = require('../middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,6 +28,41 @@ app.use(session({
 
 // Static files (frontend)
 app.use(express.static(path.join(__dirname, '../public')));
+
+// Admin CSS and JavaScript assets
+app.use(
+    '/admin/css',
+    express.static(path.join(__dirname, '../frontend/admin/css'))
+);
+
+app.use(
+    '/admin/js',
+    express.static(path.join(__dirname, '../frontend/admin/js'))
+);
+
+// Protected Admin HTML pages
+const adminPages = ['dashboard', 'customers', 'sellers', 'products', 'categories'];
+
+adminPages.forEach((page) => {
+    app.get(`/admin/${page}.html`, requireRole('admin'), (req, res) => {
+        res.sendFile(
+            path.join(__dirname, `../frontend/admin/${page}.html`)
+        );
+    });
+});
+
+app.get(
+    '/admin/super-dashboard.html',
+    requireRole('super_admin'),
+    (req, res) => {
+        res.sendFile(
+            path.join(
+                __dirname,
+                '../frontend/admin/super-dashboard.html'
+            )
+        );
+    }
+);
 
 // Root route - Serve storefront
 app.get('/', (req, res) => {
@@ -89,6 +125,9 @@ app.use('/api/seller/reports', require('./routes/sellerReports'));
 // Seller general routes
 app.use('/api/seller', require('../routes/sellerRoutes'));
 
+// Admin check routes (from admin-superadmin branch)
+app.use('/api/admin', require('../routes/adminRoutes'));
+
 // Product catalogue routes
 const productRoutes = require('./routes/products');
 app.use('/api/products', productRoutes);
@@ -101,7 +140,7 @@ app.use('/api/cart', cartRoutes);
 const orderRoutes = require('./routes/orders');
 app.use('/api/orders', orderRoutes);
 
-// Admin & Super Admin routes
+// Admin & Super Admin routes (seller moderation, audit logs, system settings)
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/superadmin', require('./routes/superadmin'));
 

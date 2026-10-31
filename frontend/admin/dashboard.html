@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body style="visibility: hidden;">
+  <p id="access-message"></p>
+
+  <!-- Shared Admin Navigation -->
+  <aside class="sidebar">
+    <h2>Admin Panel</h2>
+
+    <nav>
+      <a href="dashboard.html" class="active">Dashboard</a>
+      <a href="customers.html">Customers</a>
+      <a href="sellers.html">Sellers</a>
+      <a href="products.html">Products</a>
+      <a href="categories.html">Categories</a>
+      <a href="#">Orders</a>
+      <a href="#">Reports</a>
+    </nav>
+  </aside>
+
+  <!-- Dashboard Content -->
+  <main class="main-content">
+
+    <header class="page-header">
+      <h1>Admin Dashboard</h1>
+      <span>Administrator</span>
+    </header>
+
+    <section class="dashboard-stats">
+      <div class="stat-card">
+        <h3>Total Customers</h3>
+        <p>—</p>
+      </div>
+
+      <div class="stat-card">
+        <h3>Total Sellers</h3>
+        <p>—</p>
+      </div>
+
+      <div class="stat-card">
+        <h3>Total Products</h3>
+        <p>—</p>
+      </div>
+
+      <div class="stat-card">
+        <h3>Total Orders</h3>
+        <p>—</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Recent Activity</h2>
+      <p>Recent marketplace activity will appear here.</p>
+    </section>
+
+  </main>
+  <script src="js/admin.js"></script>
+</body>
+</html>
