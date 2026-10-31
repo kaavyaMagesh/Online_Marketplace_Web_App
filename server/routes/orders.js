@@ -52,7 +52,7 @@ router.post('/', async (req, res) => {
     let connection;
     try {
         const customerId = getCustomerId(req);
-        const { address_id, shipping_address, payment_method, items: directItems } = req.body;
+        const { address_id, shipping_address, address_line, city: inputCity, state: inputState, postal_code: inputPostalCode, country: inputCountry, recipient_name, phone, payment_method, items: directItems } = req.body;
         const clientIp = req.ip || req.connection.remoteAddress || '127.0.0.1';
 
         connection = await pool.getConnection();
@@ -70,14 +70,16 @@ router.post('/', async (req, res) => {
                 return res.status(400).json({ message: 'Specified shipping address does not exist.' });
             }
             resolvedAddressId = addrRows[0].address_id;
-        } else if (shipping_address) {
+        } else if (address_line || shipping_address) {
             let addrLine = '';
-            let city = 'Bengaluru';
-            let state = 'Karnataka';
-            let postalCode = '560001';
-            let country = 'India';
+            let city = inputCity ? String(inputCity).trim() : 'Bengaluru';
+            let state = inputState ? String(inputState).trim() : 'Karnataka';
+            let postalCode = inputPostalCode ? String(inputPostalCode).trim() : '560001';
+            let country = inputCountry ? String(inputCountry).trim() : 'India';
 
-            if (typeof shipping_address === 'string') {
+            if (address_line) {
+                addrLine = String(address_line).trim();
+            } else if (typeof shipping_address === 'string') {
                 addrLine = shipping_address.trim();
             } else if (typeof shipping_address === 'object') {
                 addrLine = (shipping_address.address_line || shipping_address.address || '').trim();
@@ -303,7 +305,9 @@ router.get('/', async (req, res) => {
                 a.city,
                 a.state,
                 a.postal_code,
-                COUNT(oi.order_item_id) AS total_items
+                a.country,
+                COUNT(oi.order_item_id) AS total_items,
+                COALESCE(SUM(oi.quantity), 0) AS total_quantity
              FROM orders o
              LEFT JOIN addresses a ON o.address_id = a.address_id
              LEFT JOIN order_items oi ON o.order_id = oi.order_id
@@ -350,9 +354,13 @@ router.get('/:id', async (req, res) => {
                 a.city,
                 a.state,
                 a.postal_code,
-                a.country
+                a.country,
+                u.name AS customer_name,
+                u.email AS customer_email,
+                u.phone AS customer_phone
              FROM orders o
              LEFT JOIN addresses a ON o.address_id = a.address_id
+             LEFT JOIN users u ON o.customer_id = u.user_id
              WHERE o.order_id = ?`,
             [orderId]
         );
@@ -392,6 +400,18 @@ router.get('/:id', async (req, res) => {
         );
 
         order.items = items;
+        order.shipping_address = {
+            address_line: order.address_line || '',
+            city: order.city || '',
+            state: order.state || '',
+            postal_code: order.postal_code || '',
+            country: order.country || ''
+        };
+        order.customer = {
+            name: order.customer_name || 'Customer',
+            email: order.customer_email || '',
+            phone: order.customer_phone || ''
+        };
 
         res.json(order);
     } catch (error) {

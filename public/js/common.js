@@ -47,9 +47,11 @@ function renderNav(user) {
             '</a>' +
             '<button class="nav-button" id="nav-logout-btn">Logout</button>';
     } else {
-        // Signed-out: show Cart, Login, and Sign Up links.
+        // Signed-out: show Cart (with badge), Login, and Sign Up links.
         rightLinks =
-            '<a href="cart.html" class="nav-cart-link" id="nav-cart-link" aria-label="Shopping Cart">🛒 Cart</a>' +
+            '<a href="cart.html" class="nav-cart-link" id="nav-cart-link" aria-label="Shopping Cart">' +
+            '  🛒 Cart <span class="cart-badge" id="nav-cart-badge">0</span>' +
+            '</a>' +
             '<a href="login.html">Login</a>' +
             '<a href="register.html" class="nav-button">Sign Up</a>';
     }
@@ -70,10 +72,8 @@ function renderNav(user) {
         logoutBtn.addEventListener("click", handleLogout);
     }
 
-    // Refresh cart badge if logged in
-    if (user) {
-        updateCartBadge();
-    }
+    // Refresh cart badge on nav render
+    updateCartBadge();
 }
 
 /**
@@ -110,9 +110,18 @@ function updateCartBadge() {
     })
     .then(function (data) {
         if (!data || !badge) return;
-        var total = Number(data.total_items) || 0;
-        badge.textContent = total;
-        badge.style.display = total > 0 ? "inline-block" : "inline-block";
+        var count = 0;
+        if (data.total_quantity !== undefined && data.total_quantity !== null) {
+            count = Number(data.total_quantity);
+        } else if (data.item_count !== undefined && data.item_count !== null) {
+            count = Number(data.item_count);
+        } else if (data.total_items !== undefined && data.total_items !== null) {
+            count = Number(data.total_items);
+        } else if (Array.isArray(data.items)) {
+            count = data.items.reduce(function (sum, it) { return sum + (Number(it.quantity) || 1); }, 0);
+        }
+        badge.textContent = count;
+        badge.style.display = count > 0 ? "inline-block" : "inline-block";
     })
     .catch(function () {
         // Silently ignore if unauthenticated or network failure

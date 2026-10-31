@@ -882,9 +882,9 @@ async function executeLogin(email, password) {
   }
 }
 
-elements.btnQuickSeller1.onclick = () => executeLogin('seller@marketplace.com', 'Marketplace@123');
-elements.btnQuickSeller2.onclick = () => executeLogin('seller2@marketplace.com', 'Marketplace@123');
-elements.btnQuickCustomer.onclick = () => executeLogin('customer@marketplace.com', 'Marketplace@123');
+if (elements.btnQuickSeller1) elements.btnQuickSeller1.onclick = () => executeLogin('seller@marketplace.com', 'Marketplace@123');
+if (elements.btnQuickSeller2) elements.btnQuickSeller2.onclick = () => executeLogin('seller2@marketplace.com', 'Marketplace@123');
+if (elements.btnQuickCustomer) elements.btnQuickCustomer.onclick = () => executeLogin('customer@marketplace.com', 'Marketplace@123');
 
 elements.customLoginForm.addEventListener('submit', (e) => {
   e.preventDefault();

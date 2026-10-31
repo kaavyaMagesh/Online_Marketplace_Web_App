@@ -29,7 +29,12 @@ app.use(session({
 // Static files (frontend)
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Login page (Admin/General fallback)
+// Dedicated Super Admin Login page
+app.get(['/superlogin', '/superadmin/login', '/superadmin/login.html'], (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/super-login.html'));
+});
+
+// Login page (Admin Staff login)
 app.get(['/login', '/adminlogin'], (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/login.html'));
 });

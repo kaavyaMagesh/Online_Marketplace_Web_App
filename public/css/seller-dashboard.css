@@ -4,24 +4,24 @@
   --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  --bg-base: #f8fafc;
+  --bg-base: #f7f8fc;
   --bg-surface: #ffffff;
   --bg-card: #ffffff;
-  --bg-card-hover: #f8fafc;
+  --bg-card-hover: #f1f5f9;
   --bg-input: #ffffff;
 
-  --border-glass: #e2e8f0;
+  --border-glass: #e5e7eb;
   --border-glass-strong: #cbd5e1;
-  --border-focus: #0f172a;
+  --border-focus: #3156a3;
 
-  --text-main: #0f172a;
-  --text-muted: #475569;
-  --text-dim: #64748b;
+  --text-main: #252525;
+  --text-muted: #555555;
+  --text-dim: #71717a;
 
-  --primary: #0f172a;
-  --primary-hover: #1e293b;
-  --primary-gradient: #0f172a;
-  --primary-glow: none;
+  --primary: #3156a3;
+  --primary-hover: #254484;
+  --primary-gradient: #3156a3;
+  --primary-glow: 0 4px 14px rgba(49, 86, 163, 0.25);
 
   --emerald: #15803d;
   --emerald-bg: #f0fdf4;
@@ -192,26 +192,26 @@ body {
   justify-content: space-between;
   gap: 1.5rem;
   margin-bottom: 2rem;
-  padding: 1.75rem 2rem;
-  background: #ffffff;
-  border: 1px solid var(--border-glass);
+  padding: 2rem 2.25rem;
+  background: #eaf0ff;
+  border: 1px solid #dbe6fe;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xs);
 }
 
 .hero-title {
   font-family: var(--font-heading);
-  font-size: 1.75rem;
+  font-size: 1.85rem;
   font-weight: 700;
-  color: var(--text-main);
+  color: var(--primary);
   letter-spacing: -0.02em;
   margin-bottom: 0.35rem;
 }
 
 .hero-title .highlight {
-  color: var(--text-main);
+  color: #1e3a8a;
   text-decoration: underline;
-  text-decoration-color: #cbd5e1;
+  text-decoration-color: #93c5fd;
   text-underline-offset: 4px;
 }
 

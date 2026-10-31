@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Marketplace Login</title>
+  <title>Admin Staff Login | GoodsPlatz</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -13,41 +13,101 @@
       place-items: center;
       min-height: 100vh;
       margin: 0;
+      padding: 20px;
     }
     .login-box {
       background: white;
-      padding: 32px;
+      padding: 36px 32px;
       border-radius: 12px;
-      width: min(350px, 85vw);
-      box-shadow: 0 5px 25px #0001;
+      width: min(380px, 100%);
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+    }
+    .badge {
+      display: inline-block;
+      background: #e0e7ff;
+      color: #3730a3;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    h2 {
+      margin: 0 0 8px 0;
+      font-size: 22px;
+      color: #1e293b;
+    }
+    p.sub {
+      margin: 0 0 20px 0;
+      font-size: 13px;
+      color: #64748b;
     }
     input, button {
       box-sizing: border-box;
       width: 100%;
       padding: 12px;
       margin-top: 12px;
+      font-size: 14px;
+    }
+    input {
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      outline: none;
+    }
+    input:focus {
+      border-color: #3156a3;
+      box-shadow: 0 0 0 2px rgba(49, 86, 163, 0.15);
     }
     button {
-      background: #2563eb;
+      background: #3156a3;
       color: white;
       border: 0;
       border-radius: 6px;
       cursor: pointer;
+      font-weight: 600;
+      transition: background 0.15s ease;
     }
-    #message { color: #b91c1c; }
+    button:hover {
+      background: #254484;
+    }
+    #message {
+      color: #b91c1c;
+      font-size: 13px;
+      margin-top: 14px;
+      margin-bottom: 0;
+    }
+    .footer-links {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: #64748b;
+    }
+    .footer-links a {
+      color: #3156a3;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
   <div class="login-box">
-    <h2>Marketplace Login</h2>
+    <span class="badge">Staff Access</span>
+    <h2>Staff Admin Login</h2>
+    <p class="sub">Log in to manage catalog, categories, customers, and view reports.</p>
     <form id="loginForm">
-      <input id="email" type="email"
-             placeholder="Email" required>
-      <input id="password" type="password"
-             placeholder="Password" required>
-      <button type="submit">Log In</button>
+      <input id="email" type="email" placeholder="admin@marketplace.com" required autocomplete="username">
+      <input id="password" type="password" placeholder="Password" required autocomplete="current-password">
+      <button type="submit" id="submitBtn">Sign In to Dashboard</button>
     </form>
     <p id="message" role="alert"></p>
+    <div class="footer-links">
+      Super Administrator? <a href="/superlogin">Super Admin Portal &rarr;</a>
+    </div>
   </div>
 
   <script>
@@ -56,7 +116,10 @@
         event.preventDefault();
 
         const message = document.getElementById('message');
+        const submitBtn = document.getElementById('submitBtn');
         message.textContent = '';
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Authenticating…';
 
         try {
           const response = await fetch('/api/auth/login', {
@@ -64,7 +127,7 @@
             headers: { 'Content-Type': 'application/json' },
             credentials: 'same-origin',
             body: JSON.stringify({
-              email: document.getElementById('email').value,
+              email: document.getElementById('email').value.trim(),
               password: document.getElementById('password').value
             })
           });
@@ -73,19 +136,22 @@
 
           if (!response.ok) {
             message.textContent = data.error || 'Login failed';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Sign In to Dashboard';
             return;
           }
 
-          if (data.user.role === 'super_admin') {
-            window.location.href = '/admin/super-dashboard.html';
-          } else if (data.user.role === 'admin') {
+          if (data.user.role === 'admin' || data.user.role === 'super_admin') {
             window.location.href = '/admin/dashboard.html';
           } else {
-            message.textContent =
-              'This demo login is for administrators only.';
+            message.textContent = 'This portal is restricted to administrator accounts.';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Sign In to Dashboard';
           }
         } catch (error) {
-          message.textContent = 'Cannot connect to server.';
+          message.textContent = 'Cannot connect to server. Please try again.';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In to Dashboard';
         }
       });
   </script>

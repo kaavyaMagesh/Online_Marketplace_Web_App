@@ -198,15 +198,17 @@ function renderOrdersList(orders) {
     var listWrapper = document.createElement("div");
     listWrapper.className = "orders-list";
 
-    orders.forEach(function (order) {
-        var card = buildOrderCard(order);
+    var totalCount = orders.length;
+    orders.forEach(function (order, index) {
+        var userOrderSeq = totalCount - index; // 1 for first placed order
+        var card = buildOrderCard(order, userOrderSeq);
         listWrapper.appendChild(card);
     });
 
     ordersContainer.appendChild(listWrapper);
 }
 
-function buildOrderCard(order) {
+function buildOrderCard(order, userOrderSeq) {
     var card = document.createElement("article");
     card.className = "order-card";
     card.dataset.orderId = order.order_id;
@@ -220,7 +222,11 @@ function buildOrderCard(order) {
 
     var refTitle = document.createElement("h3");
     refTitle.className = "order-number";
-    refTitle.textContent = "Order #" + order.order_id;
+    if (userOrderSeq) {
+        refTitle.textContent = "Order #" + userOrderSeq + " (Ref #" + order.order_id + ")";
+    } else {
+        refTitle.textContent = "Order #" + order.order_id;
+    }
     infoCol.appendChild(refTitle);
 
     var dateEl = document.createElement("span");
@@ -249,7 +255,10 @@ function buildOrderCard(order) {
     lblItems.textContent = "Items";
     var valItems = document.createElement("span");
     valItems.className = "stat-val";
-    valItems.textContent = order.total_quantity + " unit(s)";
+    var unitsCount = (order.total_quantity !== undefined && order.total_quantity !== null)
+        ? Number(order.total_quantity)
+        : (Number(order.total_items) || 1);
+    valItems.textContent = unitsCount + " unit(s)";
     statItems.appendChild(lblItems);
     statItems.appendChild(valItems);
     bodyRow.appendChild(statItems);
@@ -419,11 +428,23 @@ function loadOrderDetails(orderId, targetContainer) {
             addrBlock.appendChild(addrTitle);
 
             var addr = detail.shipping_address || {};
+            var addrLine = addr.address_line || detail.address_line || "";
+            var addrCity = addr.city || detail.city || "";
+            var addrState = addr.state || detail.state || "";
+            var addrPin = addr.postal_code || detail.postal_code || "";
+
+            var addrParts = [];
+            if (addrLine) addrParts.push(addrLine);
+            if (addrCity) addrParts.push(addrCity);
+            if (addrState) addrParts.push(addrState + (addrPin ? " - " + addrPin : ""));
+            else if (addrPin) addrParts.push(addrPin);
+
+            var fullAddr = addrParts.length > 0 ? addrParts.join(", ") : "Standard Delivery Address";
+            var custName = (detail.customer && detail.customer.name) ? (detail.customer.name + " • ") : "";
+
             var addrText = document.createElement("p");
             addrText.className = "order-address-text";
-            addrText.textContent = (detail.customer && detail.customer.name ? detail.customer.name + " • " : "") +
-                (addr.address_line || "") + ", " + (addr.city || "") + ", " +
-                (addr.state || "") + " - " + (addr.postal_code || "");
+            addrText.textContent = custName + fullAddr;
             addrBlock.appendChild(addrText);
 
             wrapper.appendChild(addrBlock);

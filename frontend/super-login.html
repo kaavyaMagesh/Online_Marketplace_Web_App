@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Super Admin Portal | GoodsPlatz</title>
+  <style>
+    :root {
+      --primary: #3156a3;
+      --primary-dark: #1e3a8a;
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .portal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: min(420px, 100%);
+      padding: 36px 32px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+    }
+    .portal-badge {
+      display: inline-block;
+      background: rgba(49, 86, 163, 0.25);
+      border: 1px solid rgba(49, 86, 163, 0.5);
+      color: #93c5fd;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    input:focus {
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+    }
+    button.submit-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background: #2563eb;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 600;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    button.submit-btn:hover {
+      background: #1d4ed8;
+    }
+    #message {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #f87171;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      padding: 10px;
+      border-radius: 6px;
+      display: none;
+    }
+    .portal-footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .portal-footer a {
+      color: #60a5fa;
+      text-decoration: none;
+    }
+    .portal-footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="portal-card">
+    <span class="portal-badge">⚡ Root Authorization</span>
+    <h1>Super Admin Portal</h1>
+    <p class="subtitle">Secure authentication portal exclusively for GoodsPlatz Super Administrators.</p>
+
+    <form id="superAdminLoginForm">
+      <div class="form-group">
+        <label for="email">Super Admin Email</label>
+        <input id="email" type="email" placeholder="superadmin@marketplace.com" required autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label for="password">Master Password</label>
+        <input id="password" type="password" placeholder="••••••••••••" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="submit-btn" id="loginBtn">Authorize & Enter</button>
+    </form>
+
+    <div id="message" role="alert"></div>
+
+    <div class="portal-footer">
+      General Staff Administrator? <a href="/adminlogin">Staff Admin Login &rarr;</a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('superAdminLoginForm')
+      .addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const message = document.getElementById('message');
+        const loginBtn = document.getElementById('loginBtn');
+        message.style.display = 'none';
+        message.textContent = '';
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'Verifying credentials…';
+
+        try {
+          const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+              email: document.getElementById('email').value.trim(),
+              password: document.getElementById('password').value
+            })
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            message.textContent = data.error || 'Super Admin authentication failed.';
+            message.style.display = 'block';
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Authorize & Enter';
+            return;
+          }
+
+          if (data.user && data.user.role === 'super_admin') {
+            window.location.href = '/admin/super-dashboard.html';
+          } else {
+            // Log out the non-super-admin session to prevent unauthorized access
+            await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
+            message.textContent = 'Access Denied: This portal requires Super Administrator privileges. Staff Admins must use /adminlogin.';
+            message.style.display = 'block';
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Authorize & Enter';
+          }
+        } catch (error) {
+          message.textContent = 'Cannot connect to server. Please try again.';
+          message.style.display = 'block';
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Authorize & Enter';
+        }
+      });
+  </script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Seller Portal Login | GoodsPlatz</title>
+  <style>
+    :root {
+      --primary: #3156a3;
+      --primary-hover: #254484;
+      --bg: #f7f8fc;
+      --text: #252525;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .portal-box {
+      background: #ffffff;
+      padding: 36px 32px;
+      border-radius: 12px;
+      width: min(400px, 100%);
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    }
+    .brand-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+    .badge {
+      display: inline-block;
+      background: #eaf0ff;
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+    h2 {
+      margin: 0 0 6px 0;
+      font-size: 20px;
+      color: #1e293b;
+    }
+    p.sub {
+      margin: 0 0 20px 0;
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .form-group {
+      margin-bottom: 14px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+    input {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(49, 86, 163, 0.15);
+    }
+    button.submit-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background: var(--primary);
+      color: white;
+      border: 0;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    button.submit-btn:hover {
+      background: var(--primary-hover);
+    }
+    #message {
+      color: #b91c1c;
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 13px;
+      margin-top: 14px;
+      display: none;
+    }
+    .footer-links {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .footer-links a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="portal-box">
+    <div class="brand-title">GoodsPlatz</div>
+    <span class="badge">Seller Central</span>
+    <h2>Seller Portal Login</h2>
+    <p class="sub">Sign in with your merchant credentials to manage inventory, catalog listings, and order fulfillment.</p>
+
+    <form id="sellerLoginForm">
+      <div class="form-group">
+        <label for="email">Seller Email Address</label>
+        <input id="email" type="email" placeholder="seller@marketplace.com" required autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="••••••••••••" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="submit-btn" id="submitBtn">Sign In to Seller Central</button>
+    </form>
+
+    <div id="message" role="alert"></div>
+
+    <div class="footer-links">
+      <a href="/">&larr; Return to Customer Storefront</a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('sellerLoginForm')
+      .addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const message = document.getElementById('message');
+        const submitBtn = document.getElementById('submitBtn');
+        message.style.display = 'none';
+        message.textContent = '';
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Verifying account…';
+
+        try {
+          const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+              email: document.getElementById('email').value.trim(),
+              password: document.getElementById('password').value
+            })
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            message.textContent = data.error || 'Authentication failed. Please verify your email and password.';
+            message.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Sign In to Seller Central';
+            return;
+          }
+
+          if (data.user && (data.user.role === 'seller' || data.user.role === 'admin' || data.user.role === 'super_admin')) {
+            window.location.href = '/seller/dashboard.html';
+          } else {
+            message.textContent = 'Access restricted: Your account does not have merchant seller privileges.';
+            message.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Sign In to Seller Central';
+          }
+        } catch (error) {
+          message.textContent = 'Unable to connect to the marketplace server. Please try again.';
+          message.style.display = 'block';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In to Seller Central';
+        }
+      });
+  </script>
+</body>
+</html>
