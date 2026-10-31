@@ -265,7 +265,9 @@ if (loginForm) {
                 // Redirect by role.
                 if (role === "seller") {
                     window.location.href = "/seller/dashboard.html";
-                } else if (role === "admin" || role === "super_admin") {
+                } else if (role === "super_admin") {
+                    window.location.href = "/admin/super-dashboard.html";
+                } else if (role === "admin") {
                     window.location.href = "/admin/dashboard.html";
                 } else {
                     // customer (default)

@@ -190,11 +190,12 @@ router.post('/login', async (req, res) => {
 router.get('/me', (req, res) => {
     // Check whether a valid session exists.
     if (!req.session || !req.session.user) {
-        return res.status(401).json({ error: 'Not authenticated. Please log in.' });
+        return res.status(401).json({ authenticated: false, user: null, error: 'Not authenticated. Please log in.' });
     }
 
     // Return the session data — safe because we never put the password there.
     return res.status(200).json({
+        authenticated: true,
         user: req.session.user
     });
 });

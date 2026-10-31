@@ -29,6 +29,11 @@ app.use(session({
 // Static files (frontend)
 app.use(express.static(path.join(__dirname, '../public')));
 
+// Login page (Admin/General fallback)
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/login.html'));
+});
+
 // Admin CSS and JavaScript assets
 app.use(
     '/admin/css',
@@ -40,11 +45,40 @@ app.use(
     express.static(path.join(__dirname, '../frontend/admin/js'))
 );
 
+// Middleware for Admin page access (admin or super_admin)
+const requireAdminPageAccess = (req, res, next) => {
+    if (!req.session || !req.session.user) {
+        return res.redirect('/login');
+    }
+    const { role, status } = req.session.user;
+    if (status !== 'active') {
+        return res.status(403).send('Account is not active.');
+    }
+    if (role !== 'admin' && role !== 'super_admin') {
+        return res.status(403).send('Access denied. Administrator permissions required.');
+    }
+    next();
+};
+
+const requireSuperAdminPageAccess = (req, res, next) => {
+    if (!req.session || !req.session.user) {
+        return res.redirect('/login');
+    }
+    const { role, status } = req.session.user;
+    if (status !== 'active') {
+        return res.status(403).send('Account is not active.');
+    }
+    if (role !== 'super_admin') {
+        return res.status(403).send('Access denied. Super Administrator permissions required.');
+    }
+    next();
+};
+
 // Protected Admin HTML pages
 const adminPages = ['dashboard', 'customers', 'sellers', 'products', 'categories'];
 
 adminPages.forEach((page) => {
-    app.get(`/admin/${page}.html`, requireRole('admin'), (req, res) => {
+    app.get(`/admin/${page}.html`, requireAdminPageAccess, (req, res) => {
         res.sendFile(
             path.join(__dirname, `../frontend/admin/${page}.html`)
         );
@@ -53,7 +87,7 @@ adminPages.forEach((page) => {
 
 app.get(
     '/admin/super-dashboard.html',
-    requireRole('super_admin'),
+    requireSuperAdminPageAccess,
     (req, res) => {
         res.sendFile(
             path.join(
