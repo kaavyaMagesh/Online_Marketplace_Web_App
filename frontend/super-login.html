@@ -5,148 +5,110 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Super Admin Portal | GoodsPlatz</title>
   <style>
-    :root {
-      --primary: #3156a3;
-      --primary-dark: #1e3a8a;
-      --bg: #0f172a;
-      --card-bg: #1e293b;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --border: #334155;
-    }
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      font-family: Arial, sans-serif;
+      background: #f4f6fa;
       display: grid;
       place-items: center;
       min-height: 100vh;
+      margin: 0;
       padding: 20px;
     }
-    .portal-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      width: min(420px, 100%);
+    .login-box {
+      background: white;
       padding: 36px 32px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      width: min(380px, 100%);
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e2e8f0;
     }
-    .portal-badge {
+    .badge {
       display: inline-block;
-      background: rgba(49, 86, 163, 0.25);
-      border: 1px solid rgba(49, 86, 163, 0.5);
-      color: #93c5fd;
-      padding: 4px 10px;
-      border-radius: 9999px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      margin-bottom: 12px;
-    }
-    h1 {
-      font-size: 24px;
+      background: #e0e7ff;
+      color: #3730a3;
+      font-size: 11px;
       font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      border-radius: 4px;
       margin-bottom: 8px;
     }
-    p.subtitle {
-      color: var(--text-muted);
-      font-size: 14px;
-      margin-bottom: 24px;
-      line-height: 1.5;
+    h2 {
+      margin: 0 0 8px 0;
+      font-size: 22px;
+      color: #1e293b;
     }
-    .form-group {
-      margin-bottom: 16px;
-    }
-    label {
-      display: block;
+    p.sub {
+      margin: 0 0 20px 0;
       font-size: 13px;
-      font-weight: 500;
-      color: #cbd5e1;
-      margin-bottom: 6px;
+      color: #64748b;
+      line-height: 1.4;
     }
-    input {
-      width: 100%;
-      padding: 12px 14px;
-      background: #0f172a;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: #ffffff;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.15s ease;
-    }
-    input:focus {
-      border-color: #60a5fa;
-      box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
-    }
-    button.submit-btn {
+    input, button {
+      box-sizing: border-box;
       width: 100%;
       padding: 12px;
-      margin-top: 10px;
-      background: #2563eb;
-      color: #ffffff;
-      font-size: 15px;
-      font-weight: 600;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    input {
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      outline: none;
+      background: #ffffff;
+      color: #1e293b;
+    }
+    input:focus {
+      border-color: #3156a3;
+      box-shadow: 0 0 0 2px rgba(49, 86, 163, 0.15);
+    }
+    button {
+      background: #3156a3;
+      color: white;
       border: 0;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
+      font-weight: 600;
       transition: background 0.15s ease;
     }
-    button.submit-btn:hover {
-      background: #1d4ed8;
+    button:hover {
+      background: #254484;
     }
     #message {
-      margin-top: 16px;
+      color: #b91c1c;
       font-size: 13px;
-      color: #f87171;
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.2);
-      padding: 10px;
-      border-radius: 6px;
-      display: none;
+      margin-top: 14px;
+      margin-bottom: 0;
     }
-    .portal-footer {
+    .footer-links {
       margin-top: 24px;
       text-align: center;
       font-size: 13px;
-      color: var(--text-muted);
+      color: #64748b;
     }
-    .portal-footer a {
-      color: #60a5fa;
+    .footer-links a {
+      color: #3156a3;
       text-decoration: none;
+      font-weight: 500;
     }
-    .portal-footer a:hover {
+    .footer-links a:hover {
       text-decoration: underline;
     }
   </style>
 </head>
 <body>
-  <div class="portal-card">
-    <span class="portal-badge">⚡ Root Authorization</span>
-    <h1>Super Admin Portal</h1>
-    <p class="subtitle">Secure authentication portal exclusively for GoodsPlatz Super Administrators.</p>
-
+  <div class="login-box">
+    <span class="badge">⚡ Root Authorization</span>
+    <h2>Super Admin Portal</h2>
+    <p class="sub">Log in with Super Administrator privileges. Press Enter or click Sign In.</p>
     <form id="superAdminLoginForm">
-      <div class="form-group">
-        <label for="email">Super Admin Email</label>
-        <input id="email" type="email" placeholder="superadmin@marketplace.com" required autocomplete="username">
-      </div>
-      <div class="form-group">
-        <label for="password">Master Password</label>
-        <input id="password" type="password" placeholder="••••••••••••" required autocomplete="current-password">
-      </div>
-      <button type="submit" class="submit-btn" id="loginBtn">Authorize & Enter</button>
+      <input id="email" type="email" placeholder="admin@marketplace.com" value="admin@marketplace.com" required autocomplete="username">
+      <input id="password" type="password" placeholder="Password" value="Marketplace@123" required autocomplete="current-password">
+      <button type="submit" id="submitBtn">Sign In to Super Admin</button>
     </form>
-
-    <div id="message" role="alert"></div>
-
-    <div class="portal-footer">
+    <p id="message" role="alert"></p>
+    <div class="footer-links">
       General Staff Administrator? <a href="/adminlogin">Staff Admin Login &rarr;</a>
     </div>
   </div>
@@ -157,11 +119,10 @@
         event.preventDefault();
 
         const message = document.getElementById('message');
-        const loginBtn = document.getElementById('loginBtn');
-        message.style.display = 'none';
+        const submitBtn = document.getElementById('submitBtn');
         message.textContent = '';
-        loginBtn.disabled = true;
-        loginBtn.textContent = 'Verifying credentials…';
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Authenticating…';
 
         try {
           const response = await fetch('/api/auth/login', {
@@ -178,9 +139,8 @@
 
           if (!response.ok) {
             message.textContent = data.error || 'Super Admin authentication failed.';
-            message.style.display = 'block';
-            loginBtn.disabled = false;
-            loginBtn.textContent = 'Authorize & Enter';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Sign In to Super Admin';
             return;
           }
 
@@ -190,15 +150,13 @@
             // Log out the non-super-admin session to prevent unauthorized access
             await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
             message.textContent = 'Access Denied: This portal requires Super Administrator privileges. Staff Admins must use /adminlogin.';
-            message.style.display = 'block';
-            loginBtn.disabled = false;
-            loginBtn.textContent = 'Authorize & Enter';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Sign In to Super Admin';
           }
         } catch (error) {
           message.textContent = 'Cannot connect to server. Please try again.';
-          message.style.display = 'block';
-          loginBtn.disabled = false;
-          loginBtn.textContent = 'Authorize & Enter';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In to Super Admin';
         }
       });
   </script>
