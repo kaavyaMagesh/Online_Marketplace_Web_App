@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,6 +15,7 @@
       margin: 0;
       padding: 20px;
     }
+
     .login-box {
       background: white;
       padding: 36px 32px;
@@ -22,6 +24,7 @@
       box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
       border: 1px solid #e2e8f0;
     }
+
     .badge {
       display: inline-block;
       background: #e0e7ff;
@@ -34,24 +37,29 @@
       border-radius: 4px;
       margin-bottom: 8px;
     }
+
     h2 {
       margin: 0 0 8px 0;
       font-size: 22px;
       color: #1e293b;
     }
+
     p.sub {
       margin: 0 0 20px 0;
       font-size: 13px;
       color: #64748b;
       line-height: 1.4;
     }
-    input, button {
+
+    input,
+    button {
       box-sizing: border-box;
       width: 100%;
       padding: 12px;
       margin-top: 12px;
       font-size: 14px;
     }
+
     input {
       border: 1px solid #cbd5e1;
       border-radius: 6px;
@@ -59,10 +67,12 @@
       background: #ffffff;
       color: #1e293b;
     }
+
     input:focus {
       border-color: #3156a3;
       box-shadow: 0 0 0 2px rgba(49, 86, 163, 0.15);
     }
+
     button {
       background: #3156a3;
       color: white;
@@ -72,39 +82,47 @@
       font-weight: 600;
       transition: background 0.15s ease;
     }
+
     button:hover {
       background: #254484;
     }
+
     #message {
       color: #b91c1c;
       font-size: 13px;
       margin-top: 14px;
       margin-bottom: 0;
     }
+
     .footer-links {
       margin-top: 24px;
       text-align: center;
       font-size: 13px;
       color: #64748b;
     }
+
     .footer-links a {
       color: #3156a3;
       text-decoration: none;
       font-weight: 500;
     }
+
     .footer-links a:hover {
       text-decoration: underline;
     }
   </style>
 </head>
+
 <body>
   <div class="login-box">
-    <span class="badge">⚡ Root Authorization</span>
+
     <h2>Super Admin Portal</h2>
     <p class="sub">Log in with Super Administrator privileges. Press Enter or click Sign In.</p>
     <form id="superAdminLoginForm">
-      <input id="email" type="email" placeholder="admin@marketplace.com" value="admin@marketplace.com" required autocomplete="username">
-      <input id="password" type="password" placeholder="Password" value="Marketplace@123" required autocomplete="current-password">
+      <input id="email" type="email" placeholder="admin@marketplace.com" value="admin@marketplace.com" required
+        autocomplete="username">
+      <input id="password" type="password" placeholder="Password" value="Marketplace@123" required
+        autocomplete="current-password">
       <button type="submit" id="submitBtn">Sign In to Super Admin</button>
     </form>
     <p id="message" role="alert"></p>
@@ -161,4 +179,5 @@
       });
   </script>
 </body>
+
 </html>
