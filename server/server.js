@@ -80,7 +80,7 @@ const requireSuperAdminPageAccess = (req, res, next) => {
 };
 
 // Protected Admin HTML pages
-const adminPages = ['dashboard', 'customers', 'sellers', 'products', 'categories'];
+const adminPages = ['dashboard', 'customers', 'sellers', 'products', 'categories', 'orders'];
 
 adminPages.forEach((page) => {
     app.get(`/admin/${page}.html`, requireAdminPageAccess, (req, res) => {

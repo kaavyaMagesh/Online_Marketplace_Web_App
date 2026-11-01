@@ -185,6 +185,128 @@ router.post('/login', async (req, res) => {
     }
 });
 
+
+/* POST /api/auth/admin/login
+   Dedicated login for Admin and Super Admin accounts.
+*/
+router.post('/admin/login', async (req, res) => {
+    const email = typeof req.body?.email === 'string'
+        ? req.body.email.trim().toLowerCase()
+        : '';
+
+    const password = typeof req.body?.password === 'string'
+        ? req.body.password
+        : '';
+
+    if (!email || !password) {
+        return res.status(400).json({
+            error: 'Email and password are required.'
+        });
+    }
+
+    if (!isValidEmail(email)) {
+        return res.status(400).json({
+            error: 'Please enter a valid email address.'
+        });
+    }
+
+    try {
+        const [rows] = await pool.query(
+            `SELECT user_id, name, email, password,
+                    phone, role, status
+             FROM users
+             WHERE email = ?`,
+            [email]
+        );
+
+        if (rows.length === 0) {
+            return res.status(401).json({
+                error: 'Invalid credentials or insufficient permissions.'
+            });
+        }
+
+        const user = rows[0];
+
+        const passwordMatch = await bcrypt.compare(
+            password,
+            user.password
+        );
+
+        if (!passwordMatch) {
+            return res.status(401).json({
+                error: 'Invalid credentials or insufficient permissions.'
+            });
+        }
+
+        if (
+            user.role !== 'admin' &&
+            user.role !== 'super_admin'
+        ) {
+            return res.status(403).json({
+                error: 'Administrator access required.'
+            });
+        }
+
+        if (user.status !== 'active') {
+            return res.status(403).json({
+                error: 'Account is not active.'
+            });
+        }
+
+        // Regenerate the session after authentication.
+        req.session.regenerate((err) => {
+            if (err) {
+                console.error('Session error:', err);
+                return res.status(500).json({
+                    error: 'Unable to establish login session.'
+                });
+            }
+
+            req.session.user = {
+                user_id: user.user_id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                role: user.role,
+                status: user.status
+            };
+
+            req.session.save((saveErr) => {
+                if (saveErr) {
+                    console.error('Session save error:', saveErr);
+                    return res.status(500).json({
+                        error: 'Unable to save login session.'
+                    });
+                }
+
+                const redirect =
+                    user.role === 'super_admin'
+                        ? '/admin/super-dashboard.html'
+                        : '/admin/dashboard.html';
+
+                return res.status(200).json({
+                    message: 'Administrator login successful.',
+                    user: {
+                        user_id: user.user_id,
+                        name: user.name,
+                        email: user.email,
+                        role: user.role
+                    },
+                    redirect
+                });
+            });
+        });
+
+    } catch (error) {
+        console.error('Admin login error:', error.message);
+
+        return res.status(500).json({
+            error: 'Login failed. Please try again.'
+        });
+    }
+});
+
+
 /* ─── GET /api/auth/me ────────────────────────────────────────── */
 
 router.get('/me', (req, res) => {

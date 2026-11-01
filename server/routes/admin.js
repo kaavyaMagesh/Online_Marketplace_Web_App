@@ -169,6 +169,82 @@ router.post('/categories', requirePermission('manage_categories'), async (req, r
     }
 });
 
+
+/**
+ * PATCH /api/admin/categories/:categoryId
+ * Edit a category or change its active status.
+ */
+router.patch('/categories/:categoryId', requirePermission('manage_categories'), async (req, res) => {
+    try {
+        const categoryId = Number(req.params.categoryId);
+        const { category_name, description, status } = req.body;
+
+        if (!Number.isInteger(categoryId) || categoryId <= 0) {
+            return res.status(400).json({ error: 'Invalid category ID.' });
+        }
+
+        const [existing] = await db.execute(
+            'SELECT * FROM categories WHERE category_id = ?',
+            [categoryId]
+        );
+
+        if (!existing.length) {
+            return res.status(404).json({ error: 'Category not found.' });
+        }
+
+        const current = existing[0];
+
+        const name = category_name === undefined
+            ? current.category_name
+            : typeof category_name === 'string' ? category_name.trim() : '';
+
+        const desc = description === undefined
+            ? current.description
+            : description;
+
+        const newStatus = status === undefined ? current.status : status;
+
+        if (!name || name.length > 100) {
+            return res.status(400).json({ error: 'Category name must be 1-100 characters.' });
+        }
+
+        if (typeof desc !== 'string' && desc !== null) {
+            return res.status(400).json({ error: 'Invalid description.' });
+        }
+
+        if (!['active', 'inactive'].includes(newStatus)) {
+            return res.status(400).json({ error: 'Invalid category status.' });
+        }
+
+        const [duplicate] = await db.execute(
+            'SELECT category_id FROM categories WHERE category_name = ? AND category_id <> ?',
+            [name, categoryId]
+        );
+
+        if (duplicate.length) {
+            return res.status(409).json({ error: 'Category name already exists.' });
+        }
+
+        await db.execute(
+            'UPDATE categories SET category_name = ?, description = ?, status = ? WHERE category_id = ?',
+            [name, desc, newStatus, categoryId]
+        );
+
+        logActivity(
+            req.session.user.user_id,
+            'CATEGORY_UPDATED',
+            { category_id: categoryId, category_name: name, status: newStatus },
+            req.ip
+        );
+
+        res.json({ message: 'Category updated successfully.' });
+
+    } catch (err) {
+        console.error('Category update failed:', err.message);
+        res.status(500).json({ error: 'Unable to update category.' });
+    }
+});
+
 /**
  * GET /api/admin/products
  * List all products across all sellers.
@@ -314,7 +390,7 @@ router.get('/customers', async (req, res) => {
  * PATCH /api/admin/customers/:customerId/status
  * Block or unblock a customer account.
  */
-router.patch('/customers/:customerId/status', async (req, res) => {
+router.patch('/customers/:customerId/status', requirePermission('manage_customers'), async (req, res) => {
     try {
         const adminId = req.session.user.user_id;
         const customerId = Number(req.params.customerId);

@@ -121,7 +121,7 @@
     <form id="superAdminLoginForm">
       <input id="email" type="email" placeholder="admin@marketplace.com" value="admin@marketplace.com" required
         autocomplete="username">
-      <input id="password" type="password" placeholder="Password" value="Marketplace@123" required
+      <input id="password" type="password" placeholder="Password" required
         autocomplete="current-password">
       <button type="submit" id="submitBtn">Sign In to Super Admin</button>
     </form>
@@ -143,7 +143,7 @@
         submitBtn.textContent = 'Authenticating…';
 
         try {
-          const response = await fetch('/api/auth/login', {
+          const response = await fetch('/api/auth/admin/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'same-origin',

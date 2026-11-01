@@ -241,61 +241,114 @@ router.get('/permissions', async (req, res) => {
  * Update an admin's assigned permissions (replaces existing permissions with new set).
  */
 router.put('/permissions/:adminId', async (req, res) => {
+    const allowedPermissions = [
+        'manage_products',
+        'manage_categories',
+        'manage_sellers',
+        'manage_customers'
+    ];
+
+    const targetAdminId = Number(req.params.adminId);
+    const permissions = req.body?.permissions;
+
+    if (!Number.isSafeInteger(targetAdminId) || targetAdminId <= 0) {
+        return res.status(400).json({ error: 'Invalid admin ID.' });
+    }
+
+    if (
+        !Array.isArray(permissions) ||
+        permissions.some(p =>
+            typeof p !== 'string' ||
+            !allowedPermissions.includes(p)
+        ) ||
+        new Set(permissions).size !== permissions.length
+    ) {
+        return res.status(400).json({
+            error: 'Invalid or duplicate permission names.'
+        });
+    }
+
+    let connection;
+
     try {
-        const superAdminId = req.session.user.user_id;
-        const targetAdminId = Number(req.params.adminId);
-        const { permissions } = req.body;
-        const clientIp = req.ip || req.connection.remoteAddress || '127.0.0.1';
+        connection = await db.getConnection();
+        await connection.beginTransaction();
 
-        if (!Number.isInteger(targetAdminId) || targetAdminId <= 0) {
-            return res.status(400).json({ error: 'Invalid admin ID.' });
-        }
+        const [users] = await connection.execute(
+            'SELECT user_id, name, email, role FROM users WHERE user_id = ? FOR UPDATE',
+            [targetAdminId]
+        );
 
-        if (!Array.isArray(permissions)) {
-            return res.status(400).json({ error: 'Permissions must be provided as an array of strings.' });
-        }
-
-        // Verify target user is an admin
-        const [users] = await db.execute('SELECT user_id, name, email, role FROM users WHERE user_id = ?', [targetAdminId]);
-        if (users.length === 0) {
-            return res.status(404).json({ error: 'Administrator not found.' });
+        if (!users.length) {
+            await connection.rollback();
+            return res.status(404).json({
+                error: 'Administrator not found.'
+            });
         }
 
         const targetUser = users[0];
-        if (targetUser.role === 'super_admin') {
-            return res.status(400).json({ error: 'Super Admin automatically has all permissions and cannot be modified here.' });
+
+        if (targetUser.role !== 'admin') {
+            await connection.rollback();
+            return res.status(400).json({
+                error: 'Only regular Admin permissions can be modified.'
+            });
         }
 
-        // Remove old permissions
-        await db.execute('DELETE FROM admin_permissions WHERE admin_id = ?', [targetAdminId]);
-
-        // Insert new permissions
-        for (const perm of permissions) {
-            const cleanPerm = String(perm).trim();
-            if (cleanPerm) {
-                await db.execute(
-                    'INSERT INTO admin_permissions (admin_id, permission_name, granted_by) VALUES (?, ?, ?)',
-                    [targetAdminId, cleanPerm, superAdminId]
-                );
-            }
-        }
-
-        logActivity(
-            superAdminId,
-            'PERMISSIONS_UPDATED',
-            { target_admin_id: targetAdminId, email: targetUser.email, new_permissions: permissions },
-            clientIp
+        await connection.execute(
+            'DELETE FROM admin_permissions WHERE admin_id = ?',
+            [targetAdminId]
         );
 
-        res.json({
-            message: `Permissions updated successfully for ${targetUser.name}.`,
+        for (const permission of permissions) {
+            await connection.execute(
+                `INSERT INTO admin_permissions
+                 (admin_id, permission_name, granted_by)
+                 VALUES (?, ?, ?)`,
+                [
+                    targetAdminId,
+                    permission,
+                    req.session.user.user_id
+                ]
+            );
+        }
+
+        await connection.commit();
+
+        logActivity(
+            req.session.user.user_id,
+            'PERMISSIONS_UPDATED',
+            {
+                target_admin_id: targetAdminId,
+                email: targetUser.email,
+                new_permissions: permissions
+            },
+            req.ip
+        );
+
+        return res.json({
+            message: 'Permissions updated successfully.',
             admin_id: targetAdminId,
             permissions
         });
 
-    } catch (err) {
-        console.error('Failed to update admin permissions:', err.message);
-        res.status(500).json({ error: 'Unable to update admin permissions.' });
+    } catch (error) {
+        if (connection) {
+            try {
+                await connection.rollback();
+            } catch (rollbackError) {
+                console.error('Rollback failed:', rollbackError.message);
+            }
+        }
+
+        console.error('Permission update failed:', error.message);
+
+        return res.status(500).json({
+            error: 'Unable to update permissions.'
+        });
+
+    } finally {
+        if (connection) connection.release();
     }
 });
 

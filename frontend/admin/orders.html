@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Management - Admin</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body style="visibility: hidden;">
+  <p id="access-message"></p>
+
+  <aside class="sidebar">
+    <h2>Admin Panel</h2>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="customers.html">Customers</a>
+      <a href="sellers.html">Sellers</a>
+      <a href="products.html">Products</a>
+      <a href="categories.html">Categories</a>
+      <a href="orders.html" class="active">Orders</a>
+      <a href="super-dashboard.html">Super Admin</a>
+      <a href="#" class="logout-link logout-btn">Logout</a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="page-header">
+      <h1>Order Management</h1>
+    </header>
+
+    <section class="card">
+      <h2>Marketplace Orders</h2>
+
+      <div style="display:flex; gap:12px; margin:15px 0; flex-wrap:wrap;">
+        <input id="order-search" type="search"
+          placeholder="Search order ID or customer">
+
+        <select id="order-status-filter">
+          <option value="">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="processing">Processing</option>
+          <option value="shipped">Shipped</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="orders-table-body">
+            <tr><td colspan="6">Loading orders...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/admin.js"></script>
+  <script src="js/orders.js"></script>
+</body>
+</html>

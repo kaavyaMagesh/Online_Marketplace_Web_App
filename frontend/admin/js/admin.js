@@ -92,6 +92,8 @@ function initPageFeatures() {
         loadAdminProducts();
     } else if (path.includes('categories.html')) {
         loadAdminCategories();
+    } else if (path.includes('orders.html')) {
+        // Order data is loaded by js/orders.js
     }
 }
 
@@ -583,29 +585,139 @@ async function loadSuperLogs() {
     const tbody = document.getElementById('super-logs-table-body');
     if (!tbody) return;
 
-    try {
-        const res = await fetch('/api/superadmin/logs?limit=50', { credentials: 'same-origin' });
-        const d = await res.json();
-        const logs = d.logs || [];
+    const userInput = document.getElementById('log-user-filter');
+    const actionSelect = document.getElementById('log-action-filter');
+    const dateInput = document.getElementById('log-date-filter');
+    const clearButton = document.getElementById('log-clear-filters');
+    const loadMoreButton = document.getElementById('log-load-more');
+    const countLabel = document.getElementById('log-filter-count');
 
-        if (logs.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;">No system logs recorded yet.</td></tr>';
-            return;
+    const pageSize = 200;
+    let logs = [];
+    let hasMore = true;
+    let loading = false;
+
+    function render() {
+        const userTerm = (userInput?.value || '').trim().toLowerCase();
+        const action = actionSelect?.value || '';
+        const date = dateInput?.value || '';
+
+        const filtered = logs.filter(log => {
+            const userText = [
+                log.user_name,
+                log.user_email,
+                log.user_role
+            ].join(' ').toLowerCase();
+
+            const logDate = log.created_at
+                ? new Date(log.created_at).toLocaleDateString('en-CA')
+                : '';
+
+            return (
+                userText.includes(userTerm) &&
+                (!action || log.action === action) &&
+                (!date || logDate === date)
+            );
+        });
+
+        tbody.innerHTML = '';
+
+        if (filtered.length === 0) {
+            tbody.innerHTML =
+                '<tr><td colspan="6">No matching audit logs found.</td></tr>';
+        } else {
+            tbody.innerHTML = filtered.map(l => `
+                <tr>
+                    <td>#${l.log_id}</td>
+                    <td><span class="badge badge-shipped">${escapeHtml(l.action)}</span></td>
+                    <td>${escapeHtml(l.user_name || 'System')}
+                        (${escapeHtml(l.user_role || 'auto')})</td>
+                    <td><small>${escapeHtml(JSON.stringify(l.details))}</small></td>
+                    <td>${escapeHtml(l.ip_address || '—')}</td>
+                    <td><small>${new Date(l.created_at).toLocaleString()}</small></td>
+                </tr>
+            `).join('');
         }
 
-        tbody.innerHTML = logs.map(l => `
-            <tr>
-                <td>#${l.log_id}</td>
-                <td><span class="badge badge-shipped">${escapeHtml(l.action)}</span></td>
-                <td>${escapeHtml(l.user_name || 'System')} (${escapeHtml(l.user_role || 'auto')})</td>
-                <td><small style="font-family:monospace;">${escapeHtml(JSON.stringify(l.details))}</small></td>
-                <td>${escapeHtml(l.ip_address || '127.0.0.1')}</td>
-                <td><small>${new Date(l.created_at).toLocaleString()}</small></td>
-            </tr>
-        `).join('');
-    } catch (e) {
-        tbody.innerHTML = '<tr><td colspan="6" style="color:red;">Failed to load logs</td></tr>';
+        if (countLabel) {
+            countLabel.textContent =
+                `Showing ${filtered.length} matching logs from ${logs.length} loaded records.`;
+        }
+
+        if (loadMoreButton) {
+            loadMoreButton.hidden = !hasMore;
+            loadMoreButton.disabled = loading;
+        }
     }
+
+    async function fetchMore() {
+        if (loading || !hasMore) return;
+
+        loading = true;
+        if (loadMoreButton) loadMoreButton.disabled = true;
+
+        try {
+            const response = await fetch(
+                `/api/superadmin/logs?limit=${pageSize}&offset=${logs.length}`,
+                { credentials: 'same-origin' }
+            );
+
+            if (!response.ok) {
+                throw new Error('Unable to retrieve audit logs.');
+            }
+
+            const data = await response.json();
+            const nextLogs = Array.isArray(data.logs) ? data.logs : [];
+
+            logs.push(...nextLogs);
+            hasMore = nextLogs.length === pageSize;
+
+            if (actionSelect) {
+                const selected = actionSelect.value;
+                const actions = [...new Set(logs.map(l => l.action))]
+                    .filter(Boolean)
+                    .sort();
+
+                actionSelect.replaceChildren();
+
+                const all = document.createElement('option');
+                all.value = '';
+                all.textContent = 'All actions';
+                actionSelect.appendChild(all);
+
+                for (const action of actions) {
+                    const option = document.createElement('option');
+                    option.value = action;
+                    option.textContent = action;
+                    actionSelect.appendChild(option);
+                }
+
+                actionSelect.value = selected;
+            }
+
+        } catch (error) {
+            if (countLabel) countLabel.textContent = error.message;
+            return;
+        } finally {
+            loading = false;
+            render();
+        }
+    }
+
+    userInput?.addEventListener('input', render);
+    actionSelect?.addEventListener('change', render);
+    dateInput?.addEventListener('change', render);
+
+    clearButton?.addEventListener('click', () => {
+        if (userInput) userInput.value = '';
+        if (actionSelect) actionSelect.value = '';
+        if (dateInput) dateInput.value = '';
+        render();
+    });
+
+    loadMoreButton?.addEventListener('click', fetchMore);
+
+    await fetchMore();
 }
 
 async function loadSuperSettings() {

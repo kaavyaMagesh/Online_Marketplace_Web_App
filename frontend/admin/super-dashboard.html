@@ -47,17 +47,18 @@
 
     <!-- Super Admin Sidebar -->
     <aside class="sidebar">
-        <h2>👑 Super Admin</h2>
+        <h2> Super Admin</h2>
 
         <nav>
-            <a href="super-dashboard.html" class="active">📊 Overview & Controls</a>
-            <a href="dashboard.html">🛡️ General Admin View</a>
-            <a href="customers.html">👥 Customers</a>
-            <a href="sellers.html">🏪 Sellers</a>
-            <a href="products.html">📦 Products</a>
-            <a href="categories.html">🏷️ Categories</a>
-            <a href="/" target="_blank">🛍️ View Store</a>
-            <a href="#" class="logout-link logout-btn">🚪 Logout</a>
+            <a href="super-dashboard.html" class="active"> Overview & Controls</a>
+            <a href="dashboard.html"> General Admin View</a>
+            <a href="customers.html"> Customers</a>
+            <a href="sellers.html"> Sellers</a>
+            <a href="products.html"> Products</a>
+            <a href="categories.html"> Categories</a>
+            <a href="orders.html">Orders</a>
+            <a href="/" target="_blank"> View Store</a>
+            <a href="#" class="logout-link logout-btn"> Logout</a>
         </nav>
     </aside>
 
@@ -94,11 +95,11 @@
 
         <!-- Navigation Tabs for Super Admin Features -->
         <div class="tabs-header">
-            <button class="tab-btn super-tab-btn active" data-target="tab-admins">👥 Manage Admins</button>
-            <button class="tab-btn super-tab-btn" data-target="tab-permissions">🔑 Assigned Permissions</button>
-            <button class="tab-btn super-tab-btn" data-target="tab-logs">📜 System Audit Logs</button>
-            <button class="tab-btn super-tab-btn" data-target="tab-settings">⚙️ System Settings</button>
-            <button class="tab-btn super-tab-btn" data-target="tab-reports">📈 Sales & Performance Reports</button>
+            <button class="tab-btn super-tab-btn active" data-target="tab-admins"> Manage Admins</button>
+            <button class="tab-btn super-tab-btn" data-target="tab-permissions"> Assigned Permissions</button>
+            <button class="tab-btn super-tab-btn" data-target="tab-logs"> System Audit Logs</button>
+            <button class="tab-btn super-tab-btn" data-target="tab-settings"> System Settings</button>
+            <button class="tab-btn super-tab-btn" data-target="tab-reports"> Sales & Performance Reports</button>
         </div>
 
         <!-- 1. Manage Admins Tab -->
@@ -130,7 +131,25 @@
                 <h2>Granted Role-Based Permissions</h2>
                 <small style="color:#64748b;">Fine-grained operational access records</small>
             </header>
-            <table>
+            
+            <div id="permission-editor" style="margin:20px 0;padding:20px;border:1px solid #e2e8f0;border-radius:8px;">
+                <h3>Edit Administrator Permissions</h3>
+
+                <label for="permission-admin-select">Select Administrator</label>
+                <select id="permission-admin-select" style="display:block;margin:12px 0;padding:10px;width:100%;max-width:400px;">
+                    <option value="">Select an administrator</option>
+                </select>
+
+                <div id="permission-checkboxes" style="display:grid;gap:12px;margin:20px 0;">
+                </div>
+
+                <button type="button" id="save-admin-permissions" class="btn btn-success">
+                    Save Permissions
+                </button>
+
+                <p id="permission-save-message" role="status" aria-live="polite"></p>
+            </div>
+<table>
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -152,7 +171,24 @@
                 <h2>System Audit Logs</h2>
                 <small style="color:#64748b;">Tamper-evident logs of administrative & critical business events</small>
             </header>
-            <table>
+            
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin:15px 0;">
+                <input type="search" id="log-user-filter"
+                    placeholder="Search administrator name or email"
+                    aria-label="Search administrator">
+
+                <select id="log-action-filter" aria-label="Filter by action">
+                    <option value="">All actions</option>
+                </select>
+
+                <input type="date" id="log-date-filter"
+                    aria-label="Filter by date">
+
+                <button type="button" id="log-clear-filters"
+                    class="btn btn-secondary">Clear Filters</button>
+            </div>
+            <p id="log-filter-count" aria-live="polite"></p>
+<table>
                 <thead>
                     <tr>
                         <th>Log ID</th>
@@ -167,7 +203,11 @@
                     <tr><td colspan="6" style="color:#64748b;">Loading audit logs...</td></tr>
                 </tbody>
             </table>
-        </section>
+        <button type="button" id="log-load-more"
+                class="btn btn-secondary" style="margin-top:15px;">
+                Load More Logs
+            </button>
+            </section>
 
         <!-- 4. System Settings Tab -->
         <section id="tab-settings" class="super-tab-pane card" style="display:none;">
@@ -230,5 +270,6 @@
     </div>
 
     <script src="js/admin.js"></script>
+  <script src="js/permissions-editor.js"></script>
 </body>
 </html>
